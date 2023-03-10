@@ -60,8 +60,7 @@ export function Upload({
   function handleDragEnter() {
     if (imageWrapDiv.current) {
       imageWrapDiv.current.style.borderColor = themeMap[theme].colors.gray.b;
-      imageWrapDiv.current.style.backgroundColor =
-        themeMap[theme].colors.secondary;
+      imageWrapDiv.current.style.backgroundColor = 'rgba(165, 55, 255, 0.2)';
     }
   }
 
@@ -92,10 +91,14 @@ export function Upload({
           </ImageUploadWrap>
         )}
         {file && json && (
-          <>
-            <p>{file.name}</p>
-            <pre>Length: {json.data.length}</pre>
-          </>
+          <div
+            style={{
+              textAlign: 'center',
+            }}
+          >
+            <h3>{file.name}</h3>
+            <h4>Length: {json.data.length}</h4>
+          </div>
         )}
         {file && (
           <FileUploadContent>

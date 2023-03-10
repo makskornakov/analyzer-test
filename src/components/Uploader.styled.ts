@@ -70,11 +70,12 @@ export const RemoveButton = styled.button`
   outline: none;
   text-transform: uppercase;
   font-weight: 700;
+  cursor: pointer;
 
   transition-duration: 0.4s;
   transition-property: background-color;
   &:hover {
-    background: #b02818;
+    background: rgb(163, 32, 18);
   }
 `;
 export const FileUploadContent = styled.div`
