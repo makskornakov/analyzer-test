@@ -24,14 +24,14 @@ export default function App({ Component, pageProps }: AppProps) {
 export function useSetMetaThemeColor(content: string) {
   useEffect(() => {
     const meta = document.head.querySelector('meta[name=theme-color]');
-    // const body = document.body;
+    const body = document.body;
     console.log(meta);
     if (meta) {
       meta.setAttribute('content', content);
     }
-    // if (body) {
-    //   body.style.backgroundColor = content;
-    // }
+    if (body) {
+      body.style.backgroundColor = content;
+    }
 
     return () => {};
   }, [content]);

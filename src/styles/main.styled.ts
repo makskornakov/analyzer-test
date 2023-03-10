@@ -10,8 +10,8 @@ export const GlobalStyles = createGlobalStyle`
 
   body {
     font-family: 'arial', sans-serif;
-    background-color: ${({ theme }) =>
-      themeMap[theme as keyof typeof themeMap].colors.background};
+    /* background-color: ${({ theme }) =>
+      themeMap[theme as keyof typeof themeMap].colors.background}; */
     color: ${({ theme }) =>
       themeMap[theme as keyof typeof themeMap].colors.text};
 

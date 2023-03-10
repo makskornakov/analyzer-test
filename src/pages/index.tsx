@@ -29,7 +29,7 @@ export default function Home({
         <h1>Home page</h1>
         <p>Test application to analyze data sets</p>
         <Button>CLICK</Button>
-        <Upload />
+        <Upload theme={theme} />
       </main>
     </>
   );

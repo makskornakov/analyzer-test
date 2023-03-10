@@ -6,6 +6,8 @@ import {
   FileUploadContent,
   RemoveButton,
 } from './uploader.styled';
+
+import themeMap from '@/theme';
 interface UploadedFile {
   data: Object[];
 }
@@ -13,9 +15,11 @@ interface UploadedFile {
 export function Upload({
   wrapWidth,
   wrapHeight,
+  theme,
 }: {
   wrapWidth?: string;
   wrapHeight?: string;
+  theme: keyof typeof themeMap;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [json, setJson] = useState<UploadedFile | null>(null);
@@ -55,14 +59,15 @@ export function Upload({
 
   function handleDragEnter() {
     if (imageWrapDiv.current) {
-      imageWrapDiv.current.style.borderColor = 'white';
-      imageWrapDiv.current.style.backgroundColor = '#1fb264';
+      imageWrapDiv.current.style.borderColor = themeMap[theme].colors.gray.b;
+      imageWrapDiv.current.style.backgroundColor =
+        themeMap[theme].colors.secondary;
     }
   }
 
   function handleDragLeave() {
     if (imageWrapDiv.current) {
-      imageWrapDiv.current.style.borderColor = '#1fb264';
+      imageWrapDiv.current.style.borderColor = themeMap[theme].colors.primary;
       imageWrapDiv.current.style.backgroundColor = 'transparent';
     }
   }

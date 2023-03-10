@@ -5,8 +5,9 @@ export const StyledUploader = styled.div<{
   width: string;
   height: string;
 }>`
-  /* outline: 1px solid red; */
-  background-color: ${({ theme }) => theme.colors.absolute};
+  outline: 1px solid red;
+  color: ${({ theme }) => theme.colors.text};
+
   width: ${({ width }) => width};
   height: ${({ height }) => height};
   margin: 0 auto;
@@ -31,20 +32,18 @@ export const StyledUploader = styled.div<{
 // hoverState (boolean) as prop
 
 export const ImageUploadWrap = styled.div`
-  margin-top: 1em;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  position: relative;
-  border: 4px dashed;
-  border-color: #1fb264;
-  color: ${({ theme }) => theme.colors.text};
+  margin-top: 1em;
   min-height: calc(100% - 2em);
-  transition-duration: 0.4s;
-  transition-property: border-color;
-  transition: 0.4s;
+
+  border: 4px dashed;
+  border-color: ${({ theme }) => theme.colors.primary};
   background-color: transparent;
+  transition: 0.4s;
 `;
 
 export const UploadInput = styled.input`
