@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { Button } from '@/styles/main.styled';
 import HeaderWrapper from '@/components/Header';
 import themeMap from '@/theme';
+import { Upload } from '@/components/Uploader';
 
 export default function Home({
   theme,
@@ -28,6 +29,7 @@ export default function Home({
         <h1>Home page</h1>
         <p>Test application to analyze data sets</p>
         <Button>CLICK</Button>
+        <Upload />
       </main>
     </>
   );
