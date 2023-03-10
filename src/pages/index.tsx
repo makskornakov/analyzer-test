@@ -4,6 +4,7 @@ import { Button } from '@/styles/main.styled';
 import HeaderWrapper from '@/components/Header';
 import themeMap from '@/theme';
 import { Upload } from '@/components/Uploader';
+import HomeWrapper from '@/components/Home';
 
 export default function Home({
   theme,
@@ -25,11 +26,11 @@ export default function Home({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <HeaderWrapper theme={theme} setTheme={setTheme} />
-        <h1>Home page</h1>
+        <HomeWrapper theme={theme} setTheme={setTheme} />
+        {/* <h1>Home page</h1>
         <p>Test application to analyze data sets</p>
-        <Button>CLICK</Button>
-        <Upload theme={theme} />
+        <Button>CLICK</Button> */}
+        {/* <Upload theme={theme} /> */}
       </main>
     </>
   );

@@ -9,13 +9,18 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: 'arial', sans-serif;
-    /* background-color: ${({ theme }) =>
-      themeMap[theme as keyof typeof themeMap].colors.background}; */
+
+    margin: 0;
+    font-family: 'roboto', sans-serif;
+
     color: ${({ theme }) =>
       themeMap[theme as keyof typeof themeMap].colors.text};
 
     transition: 0.4s;
+  }
+  /* hide scroll bar */
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   header{
@@ -26,7 +31,9 @@ export const GlobalStyles = createGlobalStyle`
     display: flex;
     flex-direction: row;
     margin: 0 auto;
+    padding: 0;
     justify-content: space-between;
+    align-items: center;
     scroll-snap-align: start;
   }
 

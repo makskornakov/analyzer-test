@@ -1,6 +1,15 @@
 import styled from 'styled-components';
 
 // width and height props
+export const UploadSectionWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 90%;
+  margin: 0 auto;
+`;
+
 export const StyledUploader = styled.div<{
   width: string;
   height: string;
