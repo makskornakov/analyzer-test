@@ -1,4 +1,21 @@
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
+
+export const GlobalStyle = createGlobalStyle`
+  * {
+    /* margin: 0; */
+    /* padding: 0; */
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'arial', sans-serif;
+    background-color: #f2f2f2;
+  }
+
+  h1, h2, h3 {
+    text-align: center;
+  }
+`;
 
 export const Button = styled.button`
   background-color: #000;
