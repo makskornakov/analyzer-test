@@ -1,6 +1,7 @@
 import styled, { createGlobalStyle } from 'styled-components';
+import themeMap from '@/theme';
 
-export const GlobalStyle = createGlobalStyle`
+export const GlobalStyles = createGlobalStyle`
   * {
     /* margin: 0; */
     /* padding: 0; */
@@ -9,7 +10,12 @@ export const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: 'arial', sans-serif;
-    background-color: #f2f2f2;
+    background-color: ${({ theme }) =>
+      themeMap[theme as keyof typeof themeMap].colors.background};
+    color: ${({ theme }) =>
+      themeMap[theme as keyof typeof themeMap].colors.text};
+
+    transition: 0.4s;
   }
 
   h1, h2, h3 {
@@ -18,18 +24,17 @@ export const GlobalStyle = createGlobalStyle`
 `;
 
 export const Button = styled.button`
-  background-color: #000;
-  color: #fff;
+  background-color: ${({ theme }) => theme.colors.primary};
   padding: 10px;
   border-radius: 5px;
   border: none;
+  color: inherit;
   cursor: pointer;
 
-  transition: all 0.3s ease-in-out;
+  transition: 0.4s ease-in-out;
+  transition-property: background-color;
 
   &:hover {
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #000;
+    background-color: ${({ theme }) => theme.colors.secondary};
   }
 `;
