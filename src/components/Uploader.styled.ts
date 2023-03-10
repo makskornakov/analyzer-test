@@ -1,9 +1,14 @@
 import styled from 'styled-components';
 
-export const StyledUploader = styled.div`
+// width and height props
+export const StyledUploader = styled.div<{
+  width: string;
+  height: string;
+}>`
   /* outline: 1px solid red; */
-  background-color: #ffffff;
-  width: 600px;
+  background-color: ${({ theme }) => theme.colors.absolute};
+  width: ${({ width }) => width};
+  height: ${({ height }) => height};
   margin: 0 auto;
   padding: 20px;
 `;
@@ -26,21 +31,20 @@ export const StyledUploader = styled.div`
 // hoverState (boolean) as prop
 
 export const ImageUploadWrap = styled.div`
-  margin-top: 20px;
+  margin-top: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   position: relative;
   border: 4px dashed;
   border-color: #1fb264;
+  color: ${({ theme }) => theme.colors.text};
+  min-height: calc(100% - 2em);
   transition-duration: 0.4s;
   transition-property: border-color;
   transition: 0.4s;
   background-color: transparent;
-  /* border outside the box */
-
-  /* &:hover {
-    border-color: white;
-    background-color: #1fb264;
-  } */
 `;
 
 export const UploadInput = styled.input`
@@ -75,24 +79,9 @@ export const RemoveButton = styled.button`
   }
 `;
 export const FileUploadContent = styled.div`
-  /* display: none; */
-  /* width: 100%; */
-  /* height: 100px; */
-  /* text-align: center; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
 `;
-
-// export const StyledUploaderInput = styled.input`
-//   /* outline: 1px solid green; */
-//   /* nice styled upload input */
-//   height: 0.1px;
-//   width: 0.1px;
-//   opacity: 0;
-//   overflow: hidden;
-//   position: absolute;
-//   z-index: -1;
-
-//   &:focus + label {
-//     outline: 1px dotted #000;
-//     outline: -webkit-focus-ring-color auto 5px;
-//   }
-// `;

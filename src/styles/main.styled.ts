@@ -18,6 +18,18 @@ export const GlobalStyles = createGlobalStyle`
     transition: 0.4s;
   }
 
+  header{
+    /* outline: 1px solid red; */
+
+    width: 97%;
+    height: 4em;
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+    justify-content: space-between;
+    scroll-snap-align: start;
+  }
+
   h1, h2, h3 {
     text-align: center;
   }
