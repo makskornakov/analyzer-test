@@ -11,6 +11,7 @@ function ThemeToggler({
   theme: keyof typeof themeMap;
   setTheme: (newTheme: keyof typeof themeMap) => void;
 }) {
+  console.log(theme);
   return (
     <CheckBoxWrapper>
       <RubberCheckbox
