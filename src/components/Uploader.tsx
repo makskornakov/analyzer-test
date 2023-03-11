@@ -53,7 +53,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
   function handleDragEnter() {
     if (imageWrapDiv.current) {
       imageWrapDiv.current.style.borderColor = themeMap[theme].colors.gray.b;
-      imageWrapDiv.current.style.backgroundColor = 'rgba(165, 55, 255, 0.2)';
+      imageWrapDiv.current.style.backgroundColor = 'rgba(156, 156, 156, 0.2)';
     }
   }
 
@@ -103,15 +103,13 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
           </FileUploadContent>
         )}
       </StyledUploader>
-      {json && (
-        <div
-          style={{
-            width: '40%',
-          }}
-        >
-          <pre>{JSON.stringify(json, null, 2)}</pre>
-        </div>
-      )}
+      <div
+        style={{
+          width: '40%',
+        }}
+      >
+        {json && <pre>{JSON.stringify(json, null, 2)}</pre>}
+      </div>
     </UploadSectionWrapper>
   );
 }

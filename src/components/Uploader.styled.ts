@@ -14,31 +14,15 @@ export const StyledUploader = styled.div<{
   width: string;
   height: string;
 }>`
-  outline: 1px solid red;
+  /* outline: 1px solid red; */
   color: ${({ theme }) => theme.colors.text};
 
   width: ${({ width }) => width};
   height: ${({ height }) => height};
+  border-right: 2px solid ${({ theme }) => theme.colors.gray.с};
   margin: 0 auto;
   padding: 20px;
 `;
-
-// export const StyledUploaderButton = styled.button`
-//   width: 100%;
-//   margin: 0;
-//   color: #fff;
-//   background: #1fb264;
-//   border: none;
-//   padding: 10px;
-//   border-radius: 4px;
-//   border-bottom: 4px solid #15824b;
-//   transition: all 0.2s ease;
-//   outline: none;
-//   text-transform: uppercase;
-//   font-weight: 700;
-// `;
-
-// hoverState (boolean) as prop
 
 export const ImageUploadWrap = styled.div`
   position: relative;
@@ -49,7 +33,7 @@ export const ImageUploadWrap = styled.div`
   margin-top: 1em;
   min-height: calc(100% - 2em);
 
-  border: 4px dashed;
+  border: 2px dashed;
   border-color: ${({ theme }) => theme.colors.primary};
   background-color: transparent;
   transition: 0.4s;
