@@ -6,7 +6,7 @@ import {
   FileUploadContent,
   RemoveButton,
   UploadSectionWrapper,
-} from './uploader.styled';
+} from './Uploader.styled';
 
 import themeMap from '@/theme';
 interface UploadedFile {
