@@ -10,6 +10,7 @@ interface DataInfo {
   length: number;
   keys: string[];
   levels: number;
+  cleanJson: UploadedFile;
 }
 
 export default function SettingsSection({
@@ -45,7 +46,7 @@ export default function SettingsSection({
           <>
             <h2>Preview</h2>
             <PreviewWrapper width="100%" height="80%">
-              <pre>{JSON.stringify(json, null, 2)}</pre>
+              <pre>{JSON.stringify(dataInfo?.cleanJson, null, 2)}</pre>
             </PreviewWrapper>
           </>
         ) : (
@@ -57,10 +58,7 @@ export default function SettingsSection({
       <div className="leftBorder">
         {dataInfo ? (
           <>
-            <h2>File info</h2>
-            <p>Length: {dataInfo.length}</p>
-            <p>Levels: {dataInfo.levels}</p>
-            <p>Keys: {dataInfo.keys.join(', ')}</p>
+            <h2>Set the Variable</h2>
           </>
         ) : (
           <div>

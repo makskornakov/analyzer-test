@@ -62,6 +62,7 @@ export const PreviewWrapper = styled.div<{ width: string; height: string }>`
   > pre {
     padding: 2em;
     min-width: 80%;
+    max-width: 90%;
     height: 100%;
     overflow: scroll;
 

@@ -5,6 +5,7 @@ import { Upload } from '@/components/Uploader';
 import FooterWrap from './Footer';
 import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
+import productsJson from '../jsonExamples/products.json';
 
 interface UploadedFile {
   data: Object[];
@@ -17,7 +18,7 @@ export default function HomeWrapper({
   theme: keyof typeof themeMap;
   setTheme: (newTheme: keyof typeof themeMap) => void;
 }) {
-  const [json, setJson] = useState<UploadedFile | null>(null);
+  const [json, setJson] = useState<UploadedFile | null>(productsJson);
 
   const SettingSection = useRef<HTMLDivElement>(null);
 
@@ -46,25 +47,25 @@ export default function HomeWrapper({
             <h2>Upload your data</h2>
             <h3>Description</h3>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
             </p>
           </div>
           <div className="leftBorder">
             <h2>How to use</h2>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
               <br />
               <br />
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
             </p>
           </div>
         </DoubleContainer>
