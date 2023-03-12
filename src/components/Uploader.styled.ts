@@ -6,7 +6,7 @@ export const UploadSectionWrapper = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
-  width: 90%;
+  width: 80%;
   margin: 0 auto;
 `;
 
@@ -20,7 +20,7 @@ export const StyledUploader = styled.div<{
   width: ${({ width }) => width};
   height: ${({ height }) => height};
   /* border-right: 1.5px solid ${({ theme }) => theme.colors.gray.с}; */
-  margin: 0 auto;
+  /* margin: 0 auto; */
   padding: 20px;
 `;
 
@@ -48,6 +48,25 @@ export const UploadInput = styled.input`
 
   opacity: 0;
   cursor: pointer;
+`;
+
+export const PreviewWrapper = styled.div`
+  width: 50%;
+  height: 15em;
+  /* position: relative; */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > pre {
+    padding: 2em;
+    min-width: 80%;
+    height: 100%;
+    overflow: scroll;
+
+    border: 2px dashed ${({ theme }) => theme.colors.gray.c};
+  }
 `;
 
 export const RemoveButton = styled.button`

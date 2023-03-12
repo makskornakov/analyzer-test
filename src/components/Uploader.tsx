@@ -6,6 +6,7 @@ import {
   FileUploadContent,
   RemoveButton,
   UploadSectionWrapper,
+  PreviewWrapper,
 } from './Uploader.styled';
 
 import themeMap from '@/theme';
@@ -66,7 +67,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
 
   return (
     <UploadSectionWrapper>
-      <StyledUploader width={'40%'} height={'15em'} className="rightBorder">
+      <StyledUploader width={'50%'} height={'15em'} className="rightBorder">
         {file === null && (
           <ImageUploadWrap ref={imageWrapDiv}>
             <UploadInput
@@ -103,14 +104,9 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
           </FileUploadContent>
         )}
       </StyledUploader>
-      <div
-        style={{
-          width: '40%',
-        }}
-        className="leftBorder"
-      >
+      <PreviewWrapper className="leftBorder">
         {json && <pre>{JSON.stringify(json, null, 2)}</pre>}
-      </div>
+      </PreviewWrapper>
     </UploadSectionWrapper>
   );
 }
