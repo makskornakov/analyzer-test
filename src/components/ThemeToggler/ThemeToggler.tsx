@@ -1,8 +1,9 @@
 import { RubberCheckbox } from '../RubberCheckbox/RubberCheckbox';
 import { CheckBoxWrapper, SunOrMoonWrapper } from './ThemeToggler.styled';
 
-import type themeMap from '../../theme';
 import Image from 'next/image';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import themeMap from '@/theme';
 
 function ThemeToggler({
   theme,
@@ -11,15 +12,32 @@ function ThemeToggler({
   theme: keyof typeof themeMap;
   setTheme: (newTheme: keyof typeof themeMap) => void;
 }) {
-  console.log(theme);
+  // on window reload check if checkbox is checked and set theme to light
+  // useEffect(() => {
+  //   if (windowRef.current) {
+  //     windowRef.current.addEventListener('load', () => {
+  //       if (checkBoxRef.current) {
+  //         if (checkBoxRef.current.checked) {
+  //           setTheme('light');
+  //         }
+  //       }
+  //     });
+  //   }
+  // }, []);
+
   return (
     <CheckBoxWrapper>
       <RubberCheckbox
         checked={theme === 'light'}
         onChange={(event) => {
+          // if (event.currentTarget.checked) {
+          //   setTheme('light');
+          // } else {
+          //   setTheme('dark');
+          // }
           setTheme(themeSwitcher(event.currentTarget.checked));
           console.log(event.currentTarget.checked);
-          console.log(theme);
+          // console.log(theme);
         }}
       />
       <SunOrMoonWrapper>

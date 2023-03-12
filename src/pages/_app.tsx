@@ -3,14 +3,34 @@ import { useLocalStorage } from 'usehooks-ts';
 import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'styled-components';
 import themeMap from '@/theme';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [theme, setTheme] = useLocalStorage<keyof typeof themeMap>(
-    'theme',
+  const [theme, setTheme] = useState<keyof typeof themeMap>(
     Object.keys(themeMap)[0] as keyof typeof themeMap
   );
-  useSetMetaThemeColor(themeMap[theme].colors.background);
+
+  const [themeFromLocalStorage, setThemeFromLocalStorage] = useLocalStorage<
+    keyof typeof themeMap
+  >('theme', Object.keys(themeMap)[0] as keyof typeof themeMap);
+
+  useLayoutEffect(() => {
+    if (themeFromLocalStorage) {
+      console.log(themeFromLocalStorage);
+      console.log('themeFromLocalStorage');
+      setTheme(themeFromLocalStorage);
+    } else {
+      setThemeFromLocalStorage(theme);
+      console.log('theme');
+      console.log(themeFromLocalStorage);
+    }
+  }, []);
+
+  useEffect(() => {
+    setThemeFromLocalStorage(theme);
+  }, [setThemeFromLocalStorage, theme]);
+
+  // useSetMetaThemeColor(themeMap[theme].colors.gray.a);
 
   return (
     <>
@@ -25,7 +45,7 @@ export function useSetMetaThemeColor(content: string) {
   useEffect(() => {
     const meta = document.head.querySelector('meta[name=theme-color]');
     const body = document.body;
-    console.log(meta);
+    // console.log(meta);
     if (meta) {
       meta.setAttribute('content', content);
     }
