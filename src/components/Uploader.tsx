@@ -6,6 +6,7 @@ import {
   FileUploadContent,
   RemoveButton,
   UploadSectionWrapper,
+  PreviewWrapper,
 } from './Uploader.styled';
 
 import themeMap from '@/theme';
@@ -13,9 +14,17 @@ interface UploadedFile {
   data: Object[];
 }
 
-export function Upload({ theme }: { theme: keyof typeof themeMap }) {
+export function Upload({
+  theme,
+  json,
+  setJson,
+}: {
+  theme: keyof typeof themeMap;
+  json: UploadedFile | null;
+  setJson: (newJson: UploadedFile | null) => void;
+}) {
   const [file, setFile] = useState<File | null>(null);
-  const [json, setJson] = useState<UploadedFile | null>(null);
+  // const [json, setJson] = useState<UploadedFile | null>(null);
 
   const input = useRef<HTMLInputElement>(null);
   const imageWrapDiv = useRef<HTMLDivElement>(null);
@@ -66,7 +75,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
 
   return (
     <UploadSectionWrapper>
-      <StyledUploader width={'40%'} height={'15em'}>
+      <StyledUploader width={'50%'} height={'20em'} className="rightBorder">
         {file === null && (
           <ImageUploadWrap ref={imageWrapDiv}>
             <UploadInput
@@ -83,18 +92,20 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
             </div>
           </ImageUploadWrap>
         )}
-        {file && json && (
-          <div
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            <h3>{file.name}</h3>
-            <h4>Length: {json.data.length}</h4>
-          </div>
-        )}
         {file && (
           <FileUploadContent>
+            {json && json.data.length > 0 && (
+              <>
+                <div
+                  style={{
+                    textAlign: 'center',
+                  }}
+                >
+                  <h3>{file.name}</h3>
+                  <h4>Length: {json.data.length}</h4>
+                </div>
+              </>
+            )}
             <div>
               <RemoveButton type="button" onClick={handleRemove}>
                 Remove <span>File</span>
@@ -103,13 +114,9 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
           </FileUploadContent>
         )}
       </StyledUploader>
-      <div
-        style={{
-          width: '40%',
-        }}
-      >
+      <PreviewWrapper className="leftBorder" width={'50%'} height={'20em'}>
         {json && <pre>{JSON.stringify(json, null, 2)}</pre>}
-      </div>
+      </PreviewWrapper>
     </UploadSectionWrapper>
   );
 }

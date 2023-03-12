@@ -14,9 +14,11 @@ export function RubberCheckbox({
   animation = '0.6s ease-out 0.08s',
   draggableLever = true,
   ...props
-}: typeof RubberCheckBoxInput['defaultProps'] & Partial<RubberCheckboxStylesProps>) {
+}: typeof RubberCheckBoxInput['defaultProps'] &
+  Partial<RubberCheckboxStylesProps>) {
   const [isDragging, setIsDragging] = useState(false);
-  const [wasLastChangeInitiatedByDrag, setWasLastChangeInitiatedByDrag] = useState(false);
+  const [wasLastChangeInitiatedByDrag, setWasLastChangeInitiatedByDrag] =
+    useState(false);
 
   const checkboxInputRef = useRef<HTMLInputElement>(null);
 
