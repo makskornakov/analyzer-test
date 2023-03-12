@@ -14,23 +14,19 @@ export default function App({ Component, pageProps }: AppProps) {
     keyof typeof themeMap
   >('theme', Object.keys(themeMap)[0] as keyof typeof themeMap);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (themeFromLocalStorage) {
-      console.log(themeFromLocalStorage);
       console.log('themeFromLocalStorage');
       setTheme(themeFromLocalStorage);
-    } else {
-      setThemeFromLocalStorage(theme);
-      console.log('theme');
-      console.log(themeFromLocalStorage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     setThemeFromLocalStorage(theme);
   }, [setThemeFromLocalStorage, theme]);
 
-  // useSetMetaThemeColor(themeMap[theme].colors.gray.a);
+  useSetMetaThemeColor(themeMap[theme].colors.background);
 
   return (
     <>
