@@ -81,7 +81,7 @@ export default function HomeWrapper({
         <h2>Clusters on the Canvas</h2>
         <canvas
           style={{
-            outline: '1px solid blue',
+            outline: '1px solid #f55500',
 
             width: '95%',
             height: '85%',
