@@ -27,10 +27,6 @@ export default function Home({
       </Head>
       <main>
         <HomeWrapper theme={theme} setTheme={setTheme} />
-        {/* <h1>Home page</h1>
-        <p>Test application to analyze data sets</p>
-        <Button>CLICK</Button> */}
-        {/* <Upload theme={theme} /> */}
       </main>
     </>
   );

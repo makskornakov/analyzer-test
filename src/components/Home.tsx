@@ -2,6 +2,7 @@ import themeMap from '@/theme';
 import { HomeContainer, InnerWrapper } from './Home.styled';
 import HeaderWrapper from '@/components/Header';
 import { Upload } from '@/components/Uploader';
+import FooterWrap from './Footer';
 
 export default function HomeWrapper({
   theme,
@@ -17,6 +18,7 @@ export default function HomeWrapper({
         <Upload theme={theme} />
       </InnerWrapper>
       <InnerWrapper></InnerWrapper>
+      <FooterWrap />
     </HomeContainer>
   );
 }
