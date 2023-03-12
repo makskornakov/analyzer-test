@@ -32,11 +32,11 @@ export default function SettingsSection({
   };
 
   useEffect(() => {
-    if (json) {
+    if (json && dataInfo === null) {
       apiFunction(json);
       scrollFunction();
     }
-  }, [json, scrollFunction]);
+  }, [dataInfo, json, scrollFunction]);
 
   return (
     <DoubleContainer>
