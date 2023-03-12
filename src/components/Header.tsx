@@ -10,7 +10,7 @@ export default function HeaderWrapper({
 }) {
   return (
     <header>
-      <h1>Header</h1>
+      <h1>Data Clusturizer</h1>
       <ThemeToggler theme={theme} setTheme={setTheme} />
     </header>
   );
