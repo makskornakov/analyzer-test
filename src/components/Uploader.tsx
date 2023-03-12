@@ -29,10 +29,25 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
         if (e.target) {
           const json = JSON.parse(e.target.result as string);
           setJson(json);
+          apiFunction(json);
         }
       };
 
       reader.readAsText(e.target.files[0]);
+    }
+  };
+
+  const lengthH3 = useRef<HTMLHeadingElement>(null);
+
+  const apiFunction = async (file: UploadedFile) => {
+    const response = await fetch('http://localhost:3000/api/', {
+      method: 'POST',
+      body: JSON.stringify(file),
+    });
+    const data = await response.json();
+    // console.log(data);
+    if (lengthH3.current) {
+      lengthH3.current.innerText = `Length: ${data.data}`;
     }
   };
 
@@ -94,7 +109,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
                   }}
                 >
                   <h3>{file.name}</h3>
-                  <h4>Length: {json.data.length}</h4>
+                  <h4 ref={lengthH3}></h4>
                 </div>
               </>
             )}
