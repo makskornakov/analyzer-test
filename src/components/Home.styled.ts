@@ -13,7 +13,8 @@ export const InnerWrapper = styled.div`
 
   position: relative;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 1.5em);
+  padding-top: 1.5em;
 
   border-bottom: 1.5px solid ${({ theme }) => theme.colors.gray.b};
   box-sizing: content-box;
@@ -26,8 +27,11 @@ export const InnerWrapper = styled.div`
   scroll-snap-align: start;
 
   > h2 {
+    /* outline: 1px solid red; */
+
+    height: 1.5em;
     position: absolute;
-    top: 1em;
+    top: 0;
   }
 `;
 

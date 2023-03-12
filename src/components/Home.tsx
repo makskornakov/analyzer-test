@@ -34,7 +34,13 @@ export default function HomeWrapper({
     <HomeContainer>
       <HeaderWrapper theme={theme} setTheme={setTheme} />
       <InnerWrapper>
-        <h2>Data Clusturizer is a tool to help you analyze your data sets.</h2>
+        <h2
+          style={{
+            top: '1.5em',
+          }}
+        >
+          Some Introduction
+        </h2>
         <DoubleContainer>
           <div className="rightBorder">
             <h2>Upload your data</h2>
@@ -70,6 +76,17 @@ export default function HomeWrapper({
       <InnerWrapper ref={SettingSection}>
         <h2>Set your settings</h2>
         <SettingsSection json={json} scrollFunction={scrollToSettings} />
+      </InnerWrapper>
+      <InnerWrapper ref={SettingSection}>
+        <h2>Clusters on the Canvas</h2>
+        <canvas
+          style={{
+            outline: '1px solid blue',
+
+            width: '95%',
+            height: '85%',
+          }}
+        ></canvas>
       </InnerWrapper>
       <FooterWrap />
     </HomeContainer>
