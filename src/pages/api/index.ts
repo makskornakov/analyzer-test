@@ -5,6 +5,12 @@ type Data = {
   data: Object[];
 };
 
+interface DataInfo {
+  length: number;
+  keys: string[];
+  levels: number;
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const rawData = req.body;
@@ -13,11 +19,27 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const data = JSON.parse(rawData) as Data;
     const array = data.data;
 
-    if (array.length > 0) {
-      res.status(200).json({ data: array.length });
-    } else {
-      res.status(400).json({ error: 'No data' });
-    }
+    const dataInfo: DataInfo = {
+      length: array.length,
+      keys: [],
+      levels: 0,
+    };
+
+    // get the keys
+    array.forEach((item) => {
+      const keys = Object.keys(item);
+      dataInfo.keys = [...dataInfo.keys, ...keys];
+    });
+
+    // get the levels
+    const levels = array.map((item) => {
+      const keys = Object.keys(item);
+      return keys.length;
+    });
+
+    dataInfo.levels = Math.max(...levels);
+
+    res.status(200).json({ dataInfo });
   } else {
     res.status(400).json({ error: 'No data' });
   }

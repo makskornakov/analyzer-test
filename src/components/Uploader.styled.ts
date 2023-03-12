@@ -50,9 +50,9 @@ export const UploadInput = styled.input`
   cursor: pointer;
 `;
 
-export const PreviewWrapper = styled.div`
-  width: 50%;
-  height: 20em;
+export const PreviewWrapper = styled.div<{ width: string; height: string }>`
+  width: ${({ width }) => width};
+  height: ${({ height }) => height};
   /* position: relative; */
   padding: 0;
   display: flex;

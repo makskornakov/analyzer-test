@@ -24,6 +24,11 @@ export const InnerWrapper = styled.div`
   align-items: center;
   justify-content: center;
   scroll-snap-align: start;
+
+  > h2 {
+    position: absolute;
+    top: 1em;
+  }
 `;
 
 export const DoubleContainer = styled.div`
@@ -41,7 +46,7 @@ export const DoubleContainer = styled.div`
     /* outline: 1px solid blue; */
 
     width: 50%;
-    height: 75%;
+    height: 65%;
     display: flex;
     flex-direction: column;
     align-items: center;
