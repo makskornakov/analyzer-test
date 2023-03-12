@@ -77,7 +77,7 @@ export default function HomeWrapper({
         <h2>Set your settings</h2>
         <SettingsSection json={json} scrollFunction={scrollToSettings} />
       </InnerWrapper>
-      <InnerWrapper ref={SettingSection}>
+      <InnerWrapper>
         <h2>Clusters on the Canvas</h2>
         <canvas
           style={{
