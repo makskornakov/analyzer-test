@@ -67,7 +67,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
 
   return (
     <UploadSectionWrapper>
-      <StyledUploader width={'50%'} height={'15em'} className="rightBorder">
+      <StyledUploader width={'50%'} height={'20em'} className="rightBorder">
         {file === null && (
           <ImageUploadWrap ref={imageWrapDiv}>
             <UploadInput
@@ -84,18 +84,20 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
             </div>
           </ImageUploadWrap>
         )}
-        {file && json && (
-          <div
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            <h3>{file.name}</h3>
-            <h4>Length: {json.data.length}</h4>
-          </div>
-        )}
         {file && (
           <FileUploadContent>
+            {json && json.data.length > 0 && (
+              <>
+                <div
+                  style={{
+                    textAlign: 'center',
+                  }}
+                >
+                  <h3>{file.name}</h3>
+                  <h4>Length: {json.data.length}</h4>
+                </div>
+              </>
+            )}
             <div>
               <RemoveButton type="button" onClick={handleRemove}>
                 Remove <span>File</span>

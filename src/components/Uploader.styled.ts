@@ -52,7 +52,7 @@ export const UploadInput = styled.input`
 
 export const PreviewWrapper = styled.div`
   width: 50%;
-  height: 15em;
+  height: 20em;
   /* position: relative; */
   padding: 0;
   display: flex;
@@ -91,7 +91,9 @@ export const RemoveButton = styled.button`
   }
 `;
 export const FileUploadContent = styled.div`
+  min-height: 75%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 
