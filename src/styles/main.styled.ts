@@ -13,8 +13,8 @@ export const GlobalStyles = createGlobalStyle`
     margin: 0;
     font-family: -apple-system, 'roboto', sans-serif;
 
-    color: ${({ theme }) =>
-      themeMap[theme as keyof typeof themeMap].colors.text};
+    background-color: ${({ theme }) => themeMap[theme as keyof typeof themeMap].colors.background};
+    color: ${({ theme }) => themeMap[theme as keyof typeof themeMap].colors.text};
 
     transition: 0.4s;
 
@@ -29,7 +29,6 @@ export const GlobalStyles = createGlobalStyle`
           themeMap[theme as keyof typeof themeMap].colors.text};
       }
     }
-      
   }
   /* hide scroll bar */
   body::-webkit-scrollbar {
