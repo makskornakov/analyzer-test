@@ -19,7 +19,7 @@ export const StyledUploader = styled.div<{
 
   width: ${({ width }) => width};
   height: ${({ height }) => height};
-  border-right: 1.5px solid ${({ theme }) => theme.colors.gray.с};
+  /* border-right: 1.5px solid ${({ theme }) => theme.colors.gray.с}; */
   margin: 0 auto;
   padding: 20px;
 `;

@@ -1,10 +1,6 @@
 import styled from 'styled-components';
 
 export const HomeContainer = styled.div`
-  /* display: flex; */
-  /* flex-direction: column; */
-  /* align-items: center; */
-  /* justify-content: center; */
   width: 100%;
   height: 100vh;
   overflow-x: hidden;
@@ -28,4 +24,31 @@ export const InnerWrapper = styled.div`
   align-items: center;
   justify-content: center;
   scroll-snap-align: start;
+`;
+
+export const DoubleContainer = styled.div`
+  /* outline: 1px solid green; */
+
+  width: 90%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: space-evenly;
+
+  > div {
+    /* outline: 1px solid blue; */
+
+    width: 50%;
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    > p {
+      width: 80%;
+    }
+  }
 `;

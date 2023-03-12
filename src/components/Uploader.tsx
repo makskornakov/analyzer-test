@@ -66,7 +66,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
 
   return (
     <UploadSectionWrapper>
-      <StyledUploader width={'40%'} height={'15em'}>
+      <StyledUploader width={'40%'} height={'15em'} className="rightBorder">
         {file === null && (
           <ImageUploadWrap ref={imageWrapDiv}>
             <UploadInput
@@ -107,6 +107,7 @@ export function Upload({ theme }: { theme: keyof typeof themeMap }) {
         style={{
           width: '40%',
         }}
+        className="leftBorder"
       >
         {json && <pre>{JSON.stringify(json, null, 2)}</pre>}
       </div>

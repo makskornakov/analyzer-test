@@ -3,7 +3,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'styled-components';
 import themeMap from '@/theme';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
   const [theme, setTheme] = useState<keyof typeof themeMap>(

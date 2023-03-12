@@ -11,12 +11,25 @@ export const GlobalStyles = createGlobalStyle`
   body {
 
     margin: 0;
-    font-family: 'roboto', sans-serif;
+    font-family: -apple-system, 'roboto', sans-serif;
 
     color: ${({ theme }) =>
       themeMap[theme as keyof typeof themeMap].colors.text};
 
     transition: 0.4s;
+
+    div {
+      &.rightBorder {
+        border-right: 0.75px solid ${({ theme }) =>
+          themeMap[theme as keyof typeof themeMap].colors.text};
+      }
+
+      &.leftBorder {
+        border-left: 0.75px solid ${({ theme }) =>
+          themeMap[theme as keyof typeof themeMap].colors.text};
+      }
+    }
+      
   }
   /* hide scroll bar */
   body::-webkit-scrollbar {
@@ -24,10 +37,10 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   header{
-    /* outline: 1px solid red; */
+   /* outline: 1px solid red; */
 
     width: 97%;
-    height: 4em;
+    height: 4.5em;
     display: flex;
     flex-direction: row;
     margin: 0 auto;
@@ -38,6 +51,8 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   h1, h2, h3 {
+    /* font family -  */
+    font-family: 'Staatliches', cursive;
     text-align: center;
   }
 `;

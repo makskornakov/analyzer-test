@@ -1,9 +1,6 @@
 import Head from 'next/head';
 // import Image from 'next/image'
-import { Button } from '@/styles/main.styled';
-import HeaderWrapper from '@/components/Header';
 import themeMap from '@/theme';
-import { Upload } from '@/components/Uploader';
 import HomeWrapper from '@/components/Home';
 
 export default function Home({
