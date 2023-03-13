@@ -30,13 +30,15 @@ const Item = ({
   return (
     <div
       style={{
-        border: '1px solid black',
-        margin: '4px',
-        padding: '10px',
+        border: '1px solid yellow',
+
+        padding: '1em',
         display: 'flex',
         justifyContent: 'space-around',
-        background: `${item.color}`,
-        color: '#000',
+        borderWidth: `1px`,
+        borderStyle: `solid`,
+        borderColor: `${item.color}`,
+
         userSelect: 'none',
       }}
       onTouchStart={(e) => {
