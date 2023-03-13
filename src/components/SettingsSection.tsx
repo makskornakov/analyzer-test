@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DoubleContainer } from './Home.styled';
+import Settings from './Settings';
 import { PreviewWrapper } from './Uploader.styled';
 
 interface UploadedFile {
@@ -57,9 +58,7 @@ export default function SettingsSection({
       </div>
       <div className="leftBorder">
         {dataInfo ? (
-          <>
-            <h2>Set the Variable</h2>
-          </>
+          <Settings />
         ) : (
           <div>
             <h2>No JSON file uploaded</h2>
