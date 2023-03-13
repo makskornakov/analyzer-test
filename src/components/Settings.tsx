@@ -14,20 +14,7 @@ const dataArray = [
   { id: 3, title: 'Item 3', color: 'green' },
 ];
 
-// const Item = ({
-//   item,
-//   dragHandleProps,
-// }: {
-//   item: any;
-//   dragHandleProps: any;
-// }) => {
-//   return (
-//     <div style={{ color: item.color }}>
-//       <div className="simple-drag-row-title">{item.title}</div>
-//       <div className="simple-drag-row-text">{item.text}</div>
-//     </div>
-//   );
-// };
+// https://codesandbox.io/s/nervous-mccarthy-t3i88?file=/src/App.js:2008-2046
 
 const Item = ({
   item,
