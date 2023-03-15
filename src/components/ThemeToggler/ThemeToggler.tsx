@@ -1,4 +1,4 @@
-import { RubberCheckbox } from '../RubberCheckbox/RubberCheckbox';
+import { RubberCheckbox } from 'rubber-checkbox';
 import { CheckBoxWrapper, SunOrMoonWrapper } from './ThemeToggler.styled';
 
 import Image from 'next/image';
@@ -38,6 +38,9 @@ function ThemeToggler({
           setTheme(themeSwitcher(event.currentTarget.checked));
           console.log(event.currentTarget.checked);
           // console.log(theme);
+        }}
+        colors={{
+          innerBorderOn: themeMap.light.colors.background,
         }}
       />
       <SunOrMoonWrapper>
