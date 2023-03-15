@@ -39,6 +39,20 @@ const onStopFunction: DraggableEventHandler = (e, data) => {
   console.log('onStop', e, data);
 };
 
+function getRect(item: Element, containerId: string): Position {
+  const container = document.getElementById(containerId);
+  if (!container) return { x1: 0, y1: 0, x2: 0, y2: 0 };
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const itemPosition = {
+    x1: itemRect.x - containerRect.x,
+    y1: itemRect.y - containerRect.y,
+    x2: itemRect.x + itemRect.width - containerRect.x,
+    y2: itemRect.y + itemRect.height - containerRect.y,
+  };
+  return itemPosition;
+}
+
 function BoardItem({
   id,
   content,
@@ -102,20 +116,6 @@ function BoardList({
       ))}
     </div>
   );
-}
-
-function getRect(item: Element, containerId: string): Position {
-  const container = document.getElementById(containerId);
-  if (!container) return { x1: 0, y1: 0, x2: 0, y2: 0 };
-  const containerRect = container.getBoundingClientRect();
-  const itemRect = item.getBoundingClientRect();
-  const itemPosition = {
-    x1: itemRect.x - containerRect.x,
-    y1: itemRect.y - containerRect.y,
-    x2: itemRect.x + itemRect.width - containerRect.x,
-    y2: itemRect.y + itemRect.height - containerRect.y,
-  };
-  return itemPosition;
 }
 
 export default function Board({
