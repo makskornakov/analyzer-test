@@ -27,6 +27,7 @@ const onStartFunction: DraggableEventHandler = (e, data) => {
   const theDiv = data.node;
   // set the z-index of the div to 1
   theDiv.style.zIndex = '1';
+  theDiv.style.backgroundColor = 'cyan';
 
   console.log('onStart', e, data);
 };
@@ -35,6 +36,7 @@ const onStopFunction: DraggableEventHandler = (e, data) => {
   const theDiv = data.node;
   // set the z-index of the div to initial
   theDiv.style.zIndex = 'initial';
+  theDiv.style.backgroundColor = 'white';
 
   console.log('onStop', e, data);
 };
@@ -67,6 +69,8 @@ function BoardItem({
 
   const onDragFunction: DraggableEventHandler = (e, data) => {
     const thisId = data.node.id;
+    const theDiv = data.node;
+
     dragFunction(thisId);
 
     setControlPosition({
@@ -153,12 +157,12 @@ export default function Board({
     const foundItems = new Map<string, Position>();
     if (!ItemsPositions) return;
     ItemsPositions.forEach((item, id) => {
+      if (id === theId) return;
       // reset the background color
       const itemElement = document.getElementById(id);
       if (!itemElement) return;
       itemElement.style.backgroundColor = 'white';
 
-      if (id === theId) return;
       if (
         coordinates.x1 < item.x2 &&
         coordinates.x2 > item.x1 &&
@@ -198,7 +202,7 @@ export default function Board({
       // set the background of the item that is intersecting the most to red
       const itemElement = document.getElementById(maxOverlap.id);
       if (itemElement) {
-        itemElement.style.backgroundColor = 'red';
+        itemElement.style.backgroundColor = '#b4b4b4';
       }
     }
 

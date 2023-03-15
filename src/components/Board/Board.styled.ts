@@ -4,6 +4,7 @@ export const BoardContainer = styled.div`
   outline: 1px solid red;
 
   display: flex;
+  user-select: none;
   width: 70%;
   height: 75%;
   justify-content: space-evenly;
@@ -21,9 +22,12 @@ export const BoardContainer = styled.div`
 `;
 
 export const Item = styled.div`
-  outline: 1px solid green;
+  /* outline: 1px solid green; */
   /* box-sizing: content-box; */
   width: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 3em;
   background-color: #f5f5f5;
   color: #000;
