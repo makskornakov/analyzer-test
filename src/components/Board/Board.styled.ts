@@ -28,5 +28,5 @@ export const Item = styled.div`
   background-color: #f5f5f5;
   color: #000;
   border-radius: 0.5em;
-  margin-top: 1.5em;
+  /* margin-top: 1.5em; */
 `;
