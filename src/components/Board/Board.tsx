@@ -158,32 +158,77 @@ export default function Board({
     const boardContainer = document.getElementById('board-container');
     if (!boardContainer) return;
     const boardContainerRect = boardContainer.getBoundingClientRect();
-    const mouseCords = {
-      x: mouseCoordinates.clientX - boardContainerRect.x,
-      y: mouseCoordinates.clientY - boardContainerRect.y,
+
+    const theDiv = e.target as HTMLDivElement;
+    const theDivRect = theDiv.getBoundingClientRect();
+    const coordinates = {
+      x1: theDivRect.x - boardContainerRect.x,
+      y1: theDivRect.y - boardContainerRect.y,
+      x2: theDivRect.x + theDivRect.width - boardContainerRect.x,
+      y2: theDivRect.y + theDivRect.height - boardContainerRect.y,
     };
 
-    // go through all items and check if mouse is inside
+    // go through all items and check if the dragged item is intersecting with any of them
+    const foundItems = [] as {
+      id: string;
+      position: {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+      };
+    }[];
+
     ItemsPositions.forEach((item) => {
+      if (item.id === id) return;
       if (
-        mouseCords.x > item.position.x1 &&
-        mouseCords.x < item.position.x2 &&
-        mouseCords.y > item.position.y1 &&
-        mouseCords.y < item.position.y2
+        coordinates.x1 < item.position.x2 &&
+        coordinates.x2 > item.position.x1 &&
+        coordinates.y1 < item.position.y2 &&
+        coordinates.y2 > item.position.y1
       ) {
-        // set the background color of the item to red
-        const itemElement = document.getElementById(item.id);
-        if (!itemElement || item.id === id) return;
-        itemElement.style.backgroundColor = 'red';
-      } else {
-        // set the background color of the item to white
-        const itemElement = document.getElementById(item.id);
-        if (!itemElement) return;
-        itemElement.style.backgroundColor = 'white';
+        foundItems.push(item);
+      }
+      // reset the background color
+      const itemElement = document.getElementById(item.id);
+      if (!itemElement) return;
+      itemElement.style.backgroundColor = 'white';
+    });
+
+    const maxOverlap = {
+      id: '',
+      overlap: 0,
+    };
+    foundItems.forEach((item) => {
+      // check which is intersecting the most
+      const xOverlap =
+        Math.max(
+          0,
+          Math.min(coordinates.x2, item.position.x2) -
+            Math.max(coordinates.x1, item.position.x1)
+        ) /
+        (coordinates.x2 - coordinates.x1);
+      const yOverlap =
+        Math.max(
+          0,
+          Math.min(coordinates.y2, item.position.y2) -
+            Math.max(coordinates.y1, item.position.y1)
+        ) /
+        (coordinates.y2 - coordinates.y1);
+      const overlap = xOverlap * yOverlap;
+      if (overlap > maxOverlap.overlap) {
+        maxOverlap.id = item.id;
+        maxOverlap.overlap = overlap;
       }
     });
 
-    console.log(mouseCords);
+    if (maxOverlap.id) {
+      // set the background of the item that is intersecting the most to red
+      const itemElement = document.getElementById(maxOverlap.id);
+      if (itemElement) {
+        itemElement.style.backgroundColor = 'red';
+      }
+    }
 
     // setControlPosition(coordinates);
   };
