@@ -29,37 +29,17 @@ export const api: TaskBoardType = {
       id: v4(),
       title: 'col1',
       tasks: [
-        { content: 'item1', id: v4() },
-        { content: 'item2', id: v4() },
-        { content: 'item3', id: v4() },
+        { content: 'itema1', id: v4() },
+        { content: 'itema2', id: v4() },
       ],
     },
     {
       id: v4(),
       title: 'col2',
       tasks: [
-        { content: 'item1', id: v4() },
-        { content: 'item2', id: v4() },
-        { content: 'item3', id: v4() },
-      ],
-    },
-
-    {
-      id: v4(),
-      title: 'col3',
-      tasks: [
-        { content: 'item1', id: v4() },
-        { content: 'item2', id: v4() },
-        { content: 'item3', id: v4() },
-      ],
-    },
-    {
-      id: v4(),
-      title: 'col4',
-      tasks: [
-        { content: 'item1', id: v4() },
-        { content: 'item2', id: v4() },
-        { content: 'item3', id: v4() },
+        { content: 'itemb1', id: v4() },
+        { content: 'itemb2', id: v4() },
+        { content: 'itemb3', id: v4() },
       ],
     },
   ],
