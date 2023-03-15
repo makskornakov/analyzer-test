@@ -3,7 +3,7 @@ import Draggable, {
   ControlPosition,
   DraggableEventHandler,
 } from 'react-draggable';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface BoardItemProps {
   id: string;
@@ -32,15 +32,6 @@ const onStartFunction: DraggableEventHandler = (e, data) => {
   console.log('onStart', e, data);
 };
 
-const onStopFunction: DraggableEventHandler = (e, data) => {
-  const theDiv = data.node;
-  // set the z-index of the div to initial
-  theDiv.style.zIndex = 'initial';
-  theDiv.style.backgroundColor = 'white';
-
-  console.log('onStop', e, data);
-};
-
 function getRect(item: Element, containerId: string): Position {
   const container = document.getElementById(containerId);
   if (!container) return { x1: 0, y1: 0, x2: 0, y2: 0 };
@@ -59,8 +50,10 @@ function BoardItem({
   id,
   content,
   dragFunction,
+  stopFunction,
 }: BoardItemProps & {
   dragFunction: (id: string) => void;
+  stopFunction: DraggableEventHandler;
 }) {
   const [controlPosition, setControlPosition] = useState<ControlPosition>({
     x: 0,
@@ -73,10 +66,10 @@ function BoardItem({
 
     dragFunction(thisId);
 
-    setControlPosition({
-      x: data.x,
-      y: data.y,
-    });
+    // setControlPosition({
+    //   x: data.x,
+    //   y: data.y,
+    // });
   };
   return (
     <Draggable
@@ -84,7 +77,7 @@ function BoardItem({
       position={controlPosition}
       onStart={onStartFunction}
       onDrag={onDragFunction}
-      onStop={onStopFunction}
+      onStop={stopFunction}
     >
       <Item id={id}>
         <span>{content}</span>
@@ -96,9 +89,11 @@ function BoardItem({
 function BoardList({
   items,
   dragFunction,
+  stopFunction,
 }: {
   items: BoardItemProps[];
   dragFunction: (id: string) => void;
+  stopFunction: DraggableEventHandler;
 }) {
   return (
     <div
@@ -116,6 +111,7 @@ function BoardList({
           id={item.id}
           content={item.content}
           dragFunction={dragFunction}
+          stopFunction={stopFunction}
         />
       ))}
     </div>
@@ -124,10 +120,61 @@ function BoardList({
 
 export default function Board({
   boardData,
+  setBoardData,
 }: {
   boardData: BoardData;
+  setBoardData: (newBoardData: BoardData) => void;
 }): JSX.Element {
+  // states for each item's position
+
   const [ItemsPositions, setItemsPositions] = useState<PositionMap>();
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [overItem, setOverItem] = useState<string | null>(null);
+
+  function changePosition(id: string, targetId: string) {
+    // get the item's position
+    const itemPosition = ItemsPositions?.get(id);
+    if (!itemPosition) return;
+
+    // get the target item's position
+    const targetPosition = ItemsPositions?.get(targetId);
+    if (!targetPosition) return;
+
+    // save the item
+    const item = boardData.itemArrays[0].find((item) => item.id === id);
+    if (!item) return;
+
+    // remove the item from the array
+    const newArray = boardData.itemArrays[0].filter((item) => item.id !== id);
+    if (!newArray) return;
+
+    // insert the item in the new position in the array
+    const index = newArray.findIndex((item) => item.id === targetId);
+    newArray.splice(index, 0, item);
+
+    // update the state
+    const newBoardData = {
+      ...boardData,
+      itemArrays: [newArray],
+    };
+    setBoardData(newBoardData);
+  }
+
+  const onStopFunction: DraggableEventHandler = (e, data) => {
+    const theDiv = data.node;
+    // set the z-index of the div to initial
+    theDiv.style.zIndex = 'initial';
+    theDiv.style.backgroundColor = 'white';
+
+    console.log('onStop', e, data);
+
+    if (overItem) {
+      changePosition(data.node.id, overItem);
+      setOverItem(null);
+
+      // rerennder the items
+    }
+  };
 
   useEffect(() => {
     const returnArray = new Map<string, Position>();
@@ -197,12 +244,15 @@ export default function Board({
         maxOverlap.overlap = overlap;
       }
     });
+    // reset the overItem
+    setOverItem(null);
 
     if (maxOverlap.id) {
       // set the background of the item that is intersecting the most to red
       const itemElement = document.getElementById(maxOverlap.id);
       if (itemElement) {
-        itemElement.style.backgroundColor = '#b4b4b4';
+        itemElement.style.backgroundColor = 'red';
+        setOverItem(maxOverlap.id);
       }
     }
 
@@ -217,17 +267,25 @@ export default function Board({
       return newMap;
     });
   };
+  // use memo function to prevent rerendering of the lists
+  const renderLists = useMemo(
+    () =>
+      boardData.itemArrays.map((itemArray, index) => (
+        <div key={index}>
+          <BoardList
+            items={itemArray}
+            dragFunction={checkIntersection}
+            stopFunction={onStopFunction}
+          />
+        </div>
+      )),
+    [boardData.itemArrays, checkIntersection, onStopFunction]
+  );
 
   return (
     <>
       <h2>Draggable lists</h2>
-      <BoardContainer id="board-container">
-        {boardData.itemArrays.map((itemArray, index) => (
-          <div key={index}>
-            <BoardList items={itemArray} dragFunction={checkIntersection} />
-          </div>
-        ))}
-      </BoardContainer>
+      <BoardContainer id="board-container">{renderLists}</BoardContainer>
     </>
   );
 }

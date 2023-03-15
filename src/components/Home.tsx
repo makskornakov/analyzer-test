@@ -4,7 +4,7 @@ import HeaderWrapper from '@/components/Header';
 import { Upload } from '@/components/Uploader';
 import FooterWrap from './Footer';
 import SettingsSection from './SettingsSection';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board from './Board/Board';
 import { boardData } from './Board/example';
@@ -32,6 +32,12 @@ export default function HomeWrapper({
       });
     }
   };
+
+  const [boardDataState, setBoardDataState] = useState(boardData);
+
+  useEffect(() => {
+    console.log(boardDataState);
+  }, [boardDataState]);
 
   return (
     <HomeContainer>
@@ -83,7 +89,7 @@ export default function HomeWrapper({
       </InnerWrapper>
       {/* <InnerWrapper> */}
       <InnerWrapper ref={SettingSection}>
-        <Board boardData={boardData} />
+        <Board boardData={boardData} setBoardData={setBoardDataState} />
       </InnerWrapper>
       <InnerWrapper>
         <h2>Clusters on the Canvas</h2>
