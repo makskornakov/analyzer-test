@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DoubleContainer } from './Home.styled';
+import SettingsWrapper from './Settings/SettingsWrapper';
 import { PreviewWrapper } from './Uploader.styled';
 
 interface UploadedFile {
@@ -59,6 +60,7 @@ export default function SettingsSection({
         {dataInfo ? (
           <>
             <h2>Set the Variable</h2>
+            <SettingsWrapper />
           </>
         ) : (
           <div>
