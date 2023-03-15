@@ -6,6 +6,7 @@ import FooterWrap from './Footer';
 import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
+import Board from './Board/Board';
 
 interface UploadedFile {
   data: Object[];
@@ -47,25 +48,25 @@ export default function HomeWrapper({
             <h2>Upload your data</h2>
             <h3>Description</h3>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
-              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
-              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
-              itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+              Similique recusandae voluptas earum! Fugiat, quos aut provident
+              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
+              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
             </p>
           </div>
           <div className="leftBorder">
             <h2>How to use</h2>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
-              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
-              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
-              itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+              Similique recusandae voluptas earum! Fugiat, quos aut provident
+              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
+              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
               <br />
               <br />
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
-              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
-              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
-              itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+              Similique recusandae voluptas earum! Fugiat, quos aut provident
+              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
+              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
             </p>
           </div>
         </DoubleContainer>
@@ -79,6 +80,9 @@ export default function HomeWrapper({
         <SettingsSection json={json} scrollFunction={scrollToSettings} />
       </InnerWrapper>
       <InnerWrapper>
+        <Board />
+      </InnerWrapper>
+      <InnerWrapper>
         <h2>Clusters on the Canvas</h2>
         <canvas
           style={{
@@ -89,6 +93,7 @@ export default function HomeWrapper({
           }}
         ></canvas>
       </InnerWrapper>
+
       <FooterWrap />
     </HomeContainer>
   );
