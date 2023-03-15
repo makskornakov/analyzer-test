@@ -1,14 +1,8 @@
-import { BoardContainer, Item } from './Board.styled';
-import Draggable, {
-  ControlPosition,
-  DraggableEventHandler,
-} from 'react-draggable';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export interface BoardItemProps {
-  id: string;
-  content: string;
-}
+import { BoardContainer } from './Board.styled';
+import { BoardList } from './BoardList';
+import { BoardItemProps } from './Item';
 
 export interface BoardData {
   itemArrays: BoardItemProps[][]; // array of arrays of items
@@ -22,24 +16,6 @@ interface Position {
 }
 
 type PositionMap = Map<string, Position>;
-
-const onStartFunction: DraggableEventHandler = (e, data) => {
-  const theDiv = data.node;
-  // set the z-index of the div to 1
-  theDiv.style.zIndex = '1';
-  theDiv.style.backgroundColor = 'cyan';
-
-  console.log('onStart', e, data);
-};
-
-const onStopFunction: DraggableEventHandler = (e, data) => {
-  const theDiv = data.node;
-  // set the z-index of the div to initial
-  theDiv.style.zIndex = 'initial';
-  theDiv.style.backgroundColor = 'white';
-
-  console.log('onStop', e, data);
-};
 
 function getRect(item: Element, containerId: string): Position {
   const container = document.getElementById(containerId);
@@ -55,78 +31,7 @@ function getRect(item: Element, containerId: string): Position {
   return itemPosition;
 }
 
-function BoardItem({
-  id,
-  content,
-  dragFunction,
-}: BoardItemProps & {
-  dragFunction: (id: string) => void;
-}) {
-  const [controlPosition, setControlPosition] = useState<ControlPosition>({
-    x: 0,
-    y: 0,
-  });
-
-  const onDragFunction: DraggableEventHandler = (e, data) => {
-    const thisId = data.node.id;
-    const theDiv = data.node;
-
-    dragFunction(thisId);
-
-    setControlPosition({
-      x: data.x,
-      y: data.y,
-    });
-  };
-  return (
-    <Draggable
-      defaultPosition={{ x: 0, y: 0 }}
-      position={controlPosition}
-      onStart={onStartFunction}
-      onDrag={onDragFunction}
-      onStop={onStopFunction}
-    >
-      <Item id={id}>
-        <span>{content}</span>
-      </Item>
-    </Draggable>
-  );
-}
-
-function BoardList({
-  items,
-  dragFunction,
-}: {
-  items: BoardItemProps[];
-  dragFunction: (id: string) => void;
-}) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1em',
-      }}
-    >
-      {items.map((item) => (
-        <BoardItem
-          key={item.id}
-          id={item.id}
-          content={item.content}
-          dragFunction={dragFunction}
-        />
-      ))}
-    </div>
-  );
-}
-
-export default function Board({
-  boardData,
-}: {
-  boardData: BoardData;
-}): JSX.Element {
+export default function Board({ boardData }: { boardData: BoardData }): JSX.Element {
   const [ItemsPositions, setItemsPositions] = useState<PositionMap>();
 
   useEffect(() => {
@@ -144,16 +49,11 @@ export default function Board({
     setItemsPositions(returnArray);
   }, [boardData]);
 
-  useEffect(() => {
-    // console.log(ItemsPositions);
-  }, [ItemsPositions]);
+  // useEffect(() => {
+  //   // console.log(ItemsPositions);
+  // }, [ItemsPositions]);
 
-  const checkIntersection = (theId: string) => {
-    const theDiv = document.getElementById(theId);
-    if (!theDiv) return;
-    const coordinates = getRect(theDiv, 'board-container');
-
-    // go through all items and check if the dragged item is intersecting with any of them
+  function getFoundItems(theId: string, coordinates: Position) {
     const foundItems = new Map<string, Position>();
     if (!ItemsPositions) return;
     ItemsPositions.forEach((item, id) => {
@@ -172,6 +72,17 @@ export default function Board({
         foundItems.set(id, item);
       }
     });
+    return foundItems;
+  }
+
+  const checkIntersection = (theId: string) => {
+    const theDiv = document.getElementById(theId);
+    if (!theDiv) return;
+    const coordinates = getRect(theDiv, 'board-container');
+
+    // go through all items and check if the dragged item is intersecting with any of them
+    const foundItems = getFoundItems(theId, coordinates);
+    if (!foundItems) return;
 
     const maxOverlap = {
       id: '',
@@ -180,16 +91,10 @@ export default function Board({
     foundItems.forEach((item, id) => {
       // check which is intersecting the most
       const xOverlap =
-        Math.max(
-          0,
-          Math.min(coordinates.x2, item.x2) - Math.max(coordinates.x1, item.x1)
-        ) /
+        Math.max(0, Math.min(coordinates.x2, item.x2) - Math.max(coordinates.x1, item.x1)) /
         (coordinates.x2 - coordinates.x1);
       const yOverlap =
-        Math.max(
-          0,
-          Math.min(coordinates.y2, item.y2) - Math.max(coordinates.y1, item.y1)
-        ) /
+        Math.max(0, Math.min(coordinates.y2, item.y2) - Math.max(coordinates.y1, item.y1)) /
         (coordinates.y2 - coordinates.y1);
       const overlap = xOverlap * yOverlap;
       if (overlap > maxOverlap.overlap && overlap > 0.02) {

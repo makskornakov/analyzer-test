@@ -1,4 +1,5 @@
-import { BoardData, BoardItemProps } from './Board';
+import type { BoardData } from './Board';
+import type { BoardItemProps } from './Item';
 
 const boardItems: BoardItemProps[] = [
   {

@@ -21,7 +21,7 @@ export const BoardContainer = styled.div`
   }
 `;
 
-export const Item = styled.div`
+export const ItemStyled = styled.div`
   /* outline: 1px solid green; */
   /* box-sizing: content-box; */
   width: 90%;
