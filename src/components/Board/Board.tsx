@@ -153,6 +153,11 @@ export default function Board({
     const foundItems = new Map<string, Position>();
     if (!ItemsPositions) return;
     ItemsPositions.forEach((item, id) => {
+      // reset the background color
+      const itemElement = document.getElementById(id);
+      if (!itemElement) return;
+      itemElement.style.backgroundColor = 'white';
+
       if (id === theId) return;
       if (
         coordinates.x1 < item.x2 &&
@@ -162,10 +167,6 @@ export default function Board({
       ) {
         foundItems.set(id, item);
       }
-      // reset the background color
-      const itemElement = document.getElementById(id);
-      if (!itemElement) return;
-      itemElement.style.backgroundColor = 'white';
     });
 
     const maxOverlap = {
