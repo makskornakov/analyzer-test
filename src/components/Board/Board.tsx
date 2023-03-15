@@ -104,31 +104,33 @@ export default function Board({
 }: {
   boardData: BoardData;
 }): JSX.Element {
+  // state map of item id to position
   const [ItemsPositions, setItemsPositions] = useState<
-    {
-      id: string;
-      position: {
+    Map<
+      string,
+      {
         x1: number;
         y1: number;
         x2: number;
         y2: number;
-      };
-    }[]
-  >([]);
+      }
+    >
+  >(new Map());
 
   useEffect(() => {
     const boardContainer = document.getElementById('board-container');
     if (!boardContainer) return;
     const boardContainerRect = boardContainer.getBoundingClientRect();
-    const returnArray = [] as {
-      id: string;
-      position: {
+    const returnArray = new Map<
+      string,
+      {
         x1: number;
         y1: number;
         x2: number;
         y2: number;
-      };
-    }[];
+      }
+    >();
+
     boardData.itemArrays.forEach((itemArray) => {
       itemArray.forEach((item) => {
         const itemElement = document.getElementById(item.id);
@@ -140,10 +142,7 @@ export default function Board({
           x2: itemRect.x + itemRect.width - boardContainerRect.x,
           y2: itemRect.y + itemRect.height - boardContainerRect.y,
         };
-        returnArray.push({
-          id: item.id,
-          position: itemPosition,
-        });
+        returnArray.set(item.id, itemPosition);
       });
     });
     setItemsPositions(returnArray);
@@ -152,9 +151,9 @@ export default function Board({
   useEffect(() => {
     console.log(ItemsPositions);
   }, [ItemsPositions]);
-  const checkIntersection = (e: MouseEvent | TouchEvent, id: string) => {
+  const checkIntersection = (e: MouseEvent | TouchEvent, theId: string) => {
     // mouse coordinates
-    const mouseCoordinates = e as MouseEvent;
+    // const mouseCoordinates = e as MouseEvent;
     const boardContainer = document.getElementById('board-container');
     if (!boardContainer) return;
     const boardContainerRect = boardContainer.getBoundingClientRect();
@@ -169,28 +168,28 @@ export default function Board({
     };
 
     // go through all items and check if the dragged item is intersecting with any of them
-    const foundItems = [] as {
-      id: string;
-      position: {
+    const foundItems = new Map<
+      string,
+      {
         x1: number;
         y1: number;
         x2: number;
         y2: number;
-      };
-    }[];
+      }
+    >();
 
-    ItemsPositions.forEach((item) => {
-      if (item.id === id) return;
+    ItemsPositions.forEach((item, id) => {
+      if (id === theId) return;
       if (
-        coordinates.x1 < item.position.x2 &&
-        coordinates.x2 > item.position.x1 &&
-        coordinates.y1 < item.position.y2 &&
-        coordinates.y2 > item.position.y1
+        coordinates.x1 < item.x2 &&
+        coordinates.x2 > item.x1 &&
+        coordinates.y1 < item.y2 &&
+        coordinates.y2 > item.y1
       ) {
-        foundItems.push(item);
+        foundItems.set(id, item);
       }
       // reset the background color
-      const itemElement = document.getElementById(item.id);
+      const itemElement = document.getElementById(id);
       if (!itemElement) return;
       itemElement.style.backgroundColor = 'white';
     });
@@ -199,25 +198,23 @@ export default function Board({
       id: '',
       overlap: 0,
     };
-    foundItems.forEach((item) => {
+    foundItems.forEach((item, id) => {
       // check which is intersecting the most
       const xOverlap =
         Math.max(
           0,
-          Math.min(coordinates.x2, item.position.x2) -
-            Math.max(coordinates.x1, item.position.x1)
+          Math.min(coordinates.x2, item.x2) - Math.max(coordinates.x1, item.x1)
         ) /
         (coordinates.x2 - coordinates.x1);
       const yOverlap =
         Math.max(
           0,
-          Math.min(coordinates.y2, item.position.y2) -
-            Math.max(coordinates.y1, item.position.y1)
+          Math.min(coordinates.y2, item.y2) - Math.max(coordinates.y1, item.y1)
         ) /
         (coordinates.y2 - coordinates.y1);
       const overlap = xOverlap * yOverlap;
       if (overlap > maxOverlap.overlap) {
-        maxOverlap.id = item.id;
+        maxOverlap.id = id;
         maxOverlap.overlap = overlap;
       }
     });
@@ -229,6 +226,22 @@ export default function Board({
         itemElement.style.backgroundColor = 'red';
       }
     }
+
+    // find the new position of the dragged item and set it
+    const itemElement = document.getElementById(theId);
+    if (!itemElement) return;
+    const itemRect = itemElement.getBoundingClientRect();
+    const itemPosition = {
+      x1: itemRect.x - boardContainerRect.x,
+      y1: itemRect.y - boardContainerRect.y,
+      x2: itemRect.x + itemRect.width - boardContainerRect.x,
+      y2: itemRect.y + itemRect.height - boardContainerRect.y,
+    };
+    setItemsPositions((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(theId, itemPosition);
+      return newMap;
+    });
 
     // setControlPosition(coordinates);
   };
