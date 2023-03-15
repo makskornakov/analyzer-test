@@ -188,7 +188,7 @@ export default function Board({
         ) /
         (coordinates.y2 - coordinates.y1);
       const overlap = xOverlap * yOverlap;
-      if (overlap > maxOverlap.overlap) {
+      if (overlap > maxOverlap.overlap && overlap > 0.02) {
         maxOverlap.id = id;
         maxOverlap.overlap = overlap;
       }
