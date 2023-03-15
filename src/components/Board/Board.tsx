@@ -14,20 +14,18 @@ export interface BoardData {
   itemArrays: BoardItemProps[][]; // array of arrays of items
 }
 
+interface Position {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+type PositionMap = Map<string, Position>;
+
 const onStartFunction: DraggableEventHandler = (e, data) => {
   console.log('onStart', e, data);
 };
-
-// const onDragFunction: DraggableEventHandler = (e, data) => {
-//   const theDiv = data.node as HTMLDivElement;
-//   const theDivRect = theDiv.getBoundingClientRect();
-//   const coordinates = {
-//     x: theDivRect.x,
-//     y: theDivRect.y,
-//   };
-//   console.log(coordinates);
-//   // console.log('onDrag', e, data);
-// };
 
 const onStopFunction: DraggableEventHandler = (e, data) => {
   console.log('onStop', e, data);
@@ -38,7 +36,7 @@ function BoardItem({
   content,
   dragFunction,
 }: BoardItemProps & {
-  dragFunction: (e: MouseEvent | TouchEvent, id: string) => void;
+  dragFunction: (id: string) => void;
 }) {
   const [controlPosition, setControlPosition] = useState<ControlPosition>({
     x: 0,
@@ -47,13 +45,12 @@ function BoardItem({
 
   const onDragFunction: DraggableEventHandler = (e, data) => {
     const thisId = data.node.id;
-    dragFunction(e as MouseEvent, thisId);
+    dragFunction(thisId);
 
-    const cords = {
+    setControlPosition({
       x: data.x,
       y: data.y,
-    };
-    setControlPosition(cords);
+    });
   };
   return (
     <Draggable
@@ -75,7 +72,7 @@ function BoardList({
   dragFunction,
 }: {
   items: BoardItemProps[];
-  dragFunction: (e: MouseEvent | TouchEvent, id: string) => void;
+  dragFunction: (id: string) => void;
 }) {
   return (
     <div
@@ -99,49 +96,36 @@ function BoardList({
   );
 }
 
+function getRect(item: Element, containerId: string): Position {
+  const container = document.getElementById(containerId);
+  if (!container) return { x1: 0, y1: 0, x2: 0, y2: 0 };
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const itemPosition = {
+    x1: itemRect.x - containerRect.x,
+    y1: itemRect.y - containerRect.y,
+    x2: itemRect.x + itemRect.width - containerRect.x,
+    y2: itemRect.y + itemRect.height - containerRect.y,
+  };
+  return itemPosition;
+}
+
 export default function Board({
   boardData,
 }: {
   boardData: BoardData;
 }): JSX.Element {
-  // state map of item id to position
-  const [ItemsPositions, setItemsPositions] = useState<
-    Map<
-      string,
-      {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-      }
-    >
-  >(new Map());
+  const [ItemsPositions, setItemsPositions] = useState<PositionMap>();
 
   useEffect(() => {
-    const boardContainer = document.getElementById('board-container');
-    if (!boardContainer) return;
-    const boardContainerRect = boardContainer.getBoundingClientRect();
-    const returnArray = new Map<
-      string,
-      {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-      }
-    >();
+    const returnArray = new Map<string, Position>();
 
     boardData.itemArrays.forEach((itemArray) => {
       itemArray.forEach((item) => {
         const itemElement = document.getElementById(item.id);
         if (!itemElement) return;
-        const itemRect = itemElement.getBoundingClientRect();
-        const itemPosition = {
-          x1: itemRect.x - boardContainerRect.x,
-          y1: itemRect.y - boardContainerRect.y,
-          x2: itemRect.x + itemRect.width - boardContainerRect.x,
-          y2: itemRect.y + itemRect.height - boardContainerRect.y,
-        };
+
+        const itemPosition = getRect(itemElement, 'board-container');
         returnArray.set(item.id, itemPosition);
       });
     });
@@ -149,35 +133,17 @@ export default function Board({
   }, [boardData]);
 
   useEffect(() => {
-    console.log(ItemsPositions);
+    // console.log(ItemsPositions);
   }, [ItemsPositions]);
-  const checkIntersection = (e: MouseEvent | TouchEvent, theId: string) => {
-    // mouse coordinates
-    // const mouseCoordinates = e as MouseEvent;
-    const boardContainer = document.getElementById('board-container');
-    if (!boardContainer) return;
-    const boardContainerRect = boardContainer.getBoundingClientRect();
 
-    const theDiv = e.target as HTMLDivElement;
-    const theDivRect = theDiv.getBoundingClientRect();
-    const coordinates = {
-      x1: theDivRect.x - boardContainerRect.x,
-      y1: theDivRect.y - boardContainerRect.y,
-      x2: theDivRect.x + theDivRect.width - boardContainerRect.x,
-      y2: theDivRect.y + theDivRect.height - boardContainerRect.y,
-    };
+  const checkIntersection = (theId: string) => {
+    const theDiv = document.getElementById(theId);
+    if (!theDiv) return;
+    const coordinates = getRect(theDiv, 'board-container');
 
     // go through all items and check if the dragged item is intersecting with any of them
-    const foundItems = new Map<
-      string,
-      {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-      }
-    >();
-
+    const foundItems = new Map<string, Position>();
+    if (!ItemsPositions) return;
     ItemsPositions.forEach((item, id) => {
       if (id === theId) return;
       if (
@@ -230,20 +196,13 @@ export default function Board({
     // find the new position of the dragged item and set it
     const itemElement = document.getElementById(theId);
     if (!itemElement) return;
-    const itemRect = itemElement.getBoundingClientRect();
-    const itemPosition = {
-      x1: itemRect.x - boardContainerRect.x,
-      y1: itemRect.y - boardContainerRect.y,
-      x2: itemRect.x + itemRect.width - boardContainerRect.x,
-      y2: itemRect.y + itemRect.height - boardContainerRect.y,
-    };
+
+    const itemPosition = getRect(itemElement, 'board-container');
     setItemsPositions((prev) => {
       const newMap = new Map(prev);
       newMap.set(theId, itemPosition);
       return newMap;
     });
-
-    // setControlPosition(coordinates);
   };
 
   return (
