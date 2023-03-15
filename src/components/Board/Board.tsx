@@ -24,10 +24,18 @@ interface Position {
 type PositionMap = Map<string, Position>;
 
 const onStartFunction: DraggableEventHandler = (e, data) => {
+  const theDiv = data.node;
+  // set the z-index of the div to 1
+  theDiv.style.zIndex = '1';
+
   console.log('onStart', e, data);
 };
 
 const onStopFunction: DraggableEventHandler = (e, data) => {
+  const theDiv = data.node;
+  // set the z-index of the div to initial
+  theDiv.style.zIndex = 'initial';
+
   console.log('onStop', e, data);
 };
 
