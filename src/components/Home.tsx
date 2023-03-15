@@ -7,6 +7,7 @@ import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board from './Board/Board';
+import { boardData } from './Board/example';
 
 interface UploadedFile {
   data: Object[];
@@ -75,12 +76,14 @@ export default function HomeWrapper({
         <h2>Upload your data</h2>
         <Upload theme={theme} json={json} setJson={setJson} />
       </InnerWrapper>
-      <InnerWrapper ref={SettingSection}>
+      <InnerWrapper>
+        {/* <InnerWrapper ref={SettingSection}> */}
         <h2>Set your settings</h2>
         <SettingsSection json={json} scrollFunction={scrollToSettings} />
       </InnerWrapper>
-      <InnerWrapper>
-        <Board />
+      {/* <InnerWrapper> */}
+      <InnerWrapper ref={SettingSection}>
+        <Board boardData={boardData} />
       </InnerWrapper>
       <InnerWrapper>
         <h2>Clusters on the Canvas</h2>

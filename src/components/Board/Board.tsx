@@ -1,40 +1,14 @@
 import { BoardContainer, Item } from './Board.styled';
 import Draggable, { DraggableEventHandler } from 'react-draggable';
+import { useEffect, useRef, useState } from 'react';
 
-interface BoardItemProps {
+export interface BoardItemProps {
   id: string;
   content: string;
 }
-
-const boardItems: BoardItemProps[] = [
-  {
-    id: '1',
-    content: 'Item 1',
-  },
-  {
-    id: '2',
-    content: 'Item 2',
-  },
-  {
-    id: '3',
-    content: 'Item 3',
-  },
-];
-
-const boardItems2: BoardItemProps[] = [
-  {
-    id: '4',
-    content: 'Item 4',
-  },
-  {
-    id: '5',
-    content: 'Item 5',
-  },
-  {
-    id: '6',
-    content: 'Item 6',
-  },
-];
+export interface BoardData {
+  itemArrays: BoardItemProps[][]; // array of arrays of items
+}
 
 const onStartFunction: DraggableEventHandler = (e, data) => {
   console.log('onStart', e, data);
@@ -64,8 +38,33 @@ function BoardItem({ id, content }: BoardItemProps) {
 }
 
 function BoardList({ items }: { items: BoardItemProps[] }) {
+  // const containerRef = useRef<HTMLDivElement>(null);
+  const [itemsState, setItemsState] = useState<
+    { id: string; position: DOMRect }[]
+  >([]);
+
+  useEffect(() => {
+    const itemsArray: { id: string; position: DOMRect }[] = [];
+    items.forEach((item) => {
+      const itemElement = document.getElementById(item.id);
+      if (itemElement) {
+        const itemPosition = itemElement.getBoundingClientRect();
+        itemsArray.push({ id: item.id, position: itemPosition });
+      }
+    });
+    setItemsState(itemsArray);
+    console.log(itemsArray);
+  }, [items]);
+
+  // useEffect(() => {
+  //   if (itemsState.length > 0) {
+  //     console.log(itemsState);
+  //   }
+  // }, [itemsState]);
+
   return (
     <div
+      // ref={containerRef}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -81,43 +80,26 @@ function BoardList({ items }: { items: BoardItemProps[] }) {
   );
 }
 
-export default function Board() {
+export default function Board({
+  boardData,
+}: {
+  boardData: BoardData;
+}): JSX.Element {
   return (
-    // <Draggable
-    //   // axis="x"
-    //   handle=".handle"
-    //   defaultPosition={{ x: 0, y: 0 }}
-    //   // position={null}
-    //   grid={[25, 25]}
-    //   scale={1}
-    //   // onStart={this.handleStart}
-    //   // onDrag={this.handleDrag}
-    //   // onStop={this.handleStop}
-    // >
-    //   <div
-    //     style={{
-    //       width: '200px',
-    //       height: '200px',
-    //       border: '1px solid black',
-    //       display: 'flex',
-    //       flexDirection: 'column',
-    //       alignItems: 'center',
-    //       justifyContent: 'center',
-    //       gap: '1em',
-    //     }}
-    //   >
-    //     <div className="handle">Drag from here</div>
-    //   </div>
-    // </Draggable>
     <>
       <h2>Draggable lists</h2>
       <BoardContainer>
-        <div>
+        {/* <div>
           <BoardList items={boardItems} />
         </div>
         <div>
           <BoardList items={boardItems2} />
-        </div>
+        </div> */}
+        {boardData.itemArrays.map((itemArray, index) => (
+          <div key={index}>
+            <BoardList items={itemArray} />
+          </div>
+        ))}
       </BoardContainer>
     </>
   );
