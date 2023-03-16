@@ -59,10 +59,92 @@ export default function Board({
   const [placeHolderState, setPlaceHolderState] =
     useState<PlaceHolderState | null>(null);
   // const [draggedId, setDraggedId] = useState<string | null>(null);
+
   // update the boardData when the boardListsOrder changes
   useEffect(() => {
-    const newBoardData = {} as BoardData;
-    // use boardData
+    // control placeholder
+    setDynamicBoardData((prev) => {
+      const newBoardData = { ...prev };
+      newBoardData.itemArrays = boardListsOrder.items.map((itemArray) =>
+        itemArray.map((itemId) => {
+          const item = boardData.itemArrays
+            .flat()
+            .find((item) => item.id === itemId);
+          if (!item) throw new Error('Item not found');
+          return item;
+        })
+      );
+      return newBoardData;
+    });
+  }, [boardData.itemArrays, boardListsOrder]);
+
+  // update the boardData when the placeHolderState changes
+  useEffect(() => {
+    // control placeholder
+    setDynamicBoardData((prev) => {
+      const newBoardData = { ...prev };
+      // remove all placeholders from boardData
+      newBoardData.itemArrays.forEach((itemArray) => {
+        const index = itemArray.findIndex((item) => item.placeholder);
+        if (index !== -1) {
+          itemArray.splice(index, 1);
+        }
+      });
+      // insert placeholder if needed
+      if (placeHolderState) {
+        const { movedId, above } = placeHolderState;
+        newBoardData.itemArrays.forEach((itemArray) => {
+          const index = itemArray.findIndex((item) => item.id === movedId);
+          if (index === -1) return;
+          const placeholder = {
+            id: `${movedId}placeholder`,
+            content: 'placeholder',
+            placeholder: true,
+          };
+          if (above) {
+            itemArray.splice(index, 0, placeholder);
+          } else {
+            itemArray.splice(index + 1, 0, placeholder);
+          }
+        });
+      }
+      return newBoardData;
+    });
+  }, [placeHolderState]);
+
+  // function controlPlaceHolder(newBoardData: BoardData): BoardData {
+  //   // insert placeholder if needed
+  //   if (placeHolderState) {
+  //     const { movedId, above } = placeHolderState;
+  //     newBoardData.itemArrays.forEach((itemArray) => {
+  //       const index = itemArray.findIndex((item) => item.id === movedId);
+  //       if (index === -1) return;
+  //       const placeholder = {
+  //         id: `${movedId}placeholder`,
+  //         content: 'placeholder',
+  //         placeholder: true,
+  //       };
+  //       if (above) {
+  //         itemArray.splice(index, 0, placeholder);
+  //       } else {
+  //         itemArray.splice(index + 1, 0, placeholder);
+  //       }
+  //     });
+  //   } else if (placeHolderState === null) {
+  //     // remove placeholder from boardData
+  //     newBoardData.itemArrays.forEach((itemArray) => {
+  //       const index = itemArray.findIndex((item) => item.placeholder);
+  //       if (index !== -1) {
+  //         itemArray.splice(index, 1);
+  //       }
+  //     });
+  //   }
+  //   return newBoardData;
+  // }
+  // use memo to render boardData in the boardListOrder order
+  const boardDataToRender = useMemo((): BoardData => {
+    const newBoardData = { ...boardData };
+
     newBoardData.itemArrays = boardListsOrder.items.map((itemArray) =>
       itemArray.map((itemId) => {
         const item = boardData.itemArrays
@@ -72,34 +154,8 @@ export default function Board({
         return item;
       })
     );
-    // insert placeholder if needed
-    if (placeHolderState) {
-      const { movedId, above } = placeHolderState;
-      newBoardData.itemArrays.forEach((itemArray) => {
-        const index = itemArray.findIndex((item) => item.id === movedId);
-        if (index === -1) return;
-        const placeholder = {
-          id: `${movedId}placeholder`,
-          content: 'placeholder',
-          placeholder: true,
-        };
-        if (above) {
-          itemArray.splice(index, 0, placeholder);
-        } else {
-          itemArray.splice(index + 1, 0, placeholder);
-        }
-      });
-    } else if (placeHolderState === null) {
-      // remove placeholder from boardData
-      newBoardData.itemArrays.forEach((itemArray) => {
-        const index = itemArray.findIndex((item) => item.placeholder);
-        if (index !== -1) {
-          itemArray.splice(index, 1);
-        }
-      });
-    }
-    setDynamicBoardData(newBoardData);
-  }, [boardData.itemArrays, boardListsOrder, placeHolderState]);
+    return newBoardData;
+  }, [boardData, boardListsOrder.items]);
 
   useEffect(() => {
     const newMap = new Map<string, Position>();
@@ -344,54 +400,54 @@ export default function Board({
   );
 }
 
-function addPlaceholderAboveOrBelow(
-  id: string,
-  above: boolean,
-  setDynamicBoardData: React.Dispatch<React.SetStateAction<BoardData>>
-): string {
-  // Add a placeholder above or below the item in the BoardList
-  setDynamicBoardData((prev) => {
-    // find id in prev.itemArrays
-    const itemArrayIndex = prev.itemArrays.findIndex((itemArray) =>
-      itemArray.find((item) => item.id === id)
-    );
-    if (itemArrayIndex === -1) return prev;
-    const itemIndex = prev.itemArrays[itemArrayIndex].findIndex(
-      (item) => item.id === id
-    );
-    if (itemIndex === -1) return prev;
+// function addPlaceholderAboveOrBelow(
+//   id: string,
+//   above: boolean,
+//   setDynamicBoardData: React.Dispatch<React.SetStateAction<BoardData>>
+// ): string {
+//   // Add a placeholder above or below the item in the BoardList
+//   setDynamicBoardData((prev) => {
+//     // find id in prev.itemArrays
+//     const itemArrayIndex = prev.itemArrays.findIndex((itemArray) =>
+//       itemArray.find((item) => item.id === id)
+//     );
+//     if (itemArrayIndex === -1) return prev;
+//     const itemIndex = prev.itemArrays[itemArrayIndex].findIndex(
+//       (item) => item.id === id
+//     );
+//     if (itemIndex === -1) return prev;
 
-    const newItemArray = [...prev.itemArrays[itemArrayIndex]];
-    // check if the item that is being moved has the moved property
-    // if (newItemArray[itemIndex].moved) return prev;
-    // if (newItemArray[itemIndex].placeholder) return prev;
-    // add moved: true to the item that is being moved
-    // newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
-    newItemArray.splice(itemIndex + (above ? 0 : 1), 0, {
-      id: `${id}placeholder`,
-      placeholder: true,
-      content: 'placeholder',
-    });
-    const newItemArrays = [...prev.itemArrays];
-    newItemArrays[itemArrayIndex] = newItemArray;
-    return { ...prev, itemArrays: newItemArrays };
-  });
-  return `${id}placeholder`;
+//     const newItemArray = [...prev.itemArrays[itemArrayIndex]];
+//     // check if the item that is being moved has the moved property
+//     // if (newItemArray[itemIndex].moved) return prev;
+//     // if (newItemArray[itemIndex].placeholder) return prev;
+//     // add moved: true to the item that is being moved
+//     // newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
+//     newItemArray.splice(itemIndex + (above ? 0 : 1), 0, {
+//       id: `${id}placeholder`,
+//       placeholder: true,
+//       content: 'placeholder',
+//     });
+//     const newItemArrays = [...prev.itemArrays];
+//     newItemArrays[itemArrayIndex] = newItemArray;
+//     return { ...prev, itemArrays: newItemArrays };
+//   });
+//   return `${id}placeholder`;
 
-  // const placeholderExists = document.getElementById(`${id}placeholder`);
-  // if (placeholderExists) {
-  //   placeholderExists.parentElement?.removeChild(placeholderExists);
-  // }
-  // const theDiv = document.getElementById(id);
-  // if (!theDiv) return;
-  // const theDivParent = theDiv.parentElement;
-  // if (!theDivParent) return;
-  // const copyDiv = theDiv.cloneNode() as HTMLElement;
-  // copyDiv.id = copyDiv.id + 'placeholder';
-  // copyDiv.style.opacity = '0.4';
-  // copyDiv.style.color = 'transparent';
-  // theDivParent.insertBefore(copyDiv, theDiv);
-  // use PlaceholderItemStyled
-  // type insertProps = <T>(node: T, child: Node | null) => T;
-  // theDivParent?.insertBefore()
-}
+// const placeholderExists = document.getElementById(`${id}placeholder`);
+// if (placeholderExists) {
+//   placeholderExists.parentElement?.removeChild(placeholderExists);
+// }
+// const theDiv = document.getElementById(id);
+// if (!theDiv) return;
+// const theDivParent = theDiv.parentElement;
+// if (!theDivParent) return;
+// const copyDiv = theDiv.cloneNode() as HTMLElement;
+// copyDiv.id = copyDiv.id + 'placeholder';
+// copyDiv.style.opacity = '0.4';
+// copyDiv.style.color = 'transparent';
+// theDivParent.insertBefore(copyDiv, theDiv);
+// use PlaceholderItemStyled
+// type insertProps = <T>(node: T, child: Node | null) => T;
+// theDivParent?.insertBefore()
+// }
