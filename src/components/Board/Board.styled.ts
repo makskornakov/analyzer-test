@@ -45,6 +45,7 @@ export const ItemStyled = styled.div`
 `;
 
 export const ItemPlaceholderStyled = styled.div`
+  ${mainItemStyle}
   background-color: rgba(255, 255, 255, 0.5);
   opacity: 0.5;
 `;

@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import Draggable, { ControlPosition, DraggableEventHandler } from 'react-draggable';
+import Draggable, {
+  ControlPosition,
+  DraggableEventHandler,
+} from 'react-draggable';
 import { ItemStyled, ItemPlaceholderStyled } from './Board.styled';
 
 const onStartFunction: DraggableEventHandler = (e, data) => {
@@ -30,10 +33,10 @@ export interface BoardItemProps {
 function BoardItem({
   id,
   content,
+  placeholder,
   dragFunction,
   onStart,
   onEnd,
-  placeholder,
 }: BoardItemProps & {
   dragFunction: (id: string) => void;
   onStart: (id: string) => void;
@@ -57,7 +60,7 @@ function BoardItem({
   };
 
   return placeholder ? (
-    <ItemPlaceholderStyled id={id} className="item.placeholder">
+    <ItemPlaceholderStyled id={id}>
       <span>{content}</span>
     </ItemPlaceholderStyled>
   ) : (
@@ -99,6 +102,7 @@ export default function Item({
     <BoardItem
       id={id}
       content={content}
+      placeholder={placeholder}
       dragFunction={dragFunction}
       onStart={onStart}
       onEnd={onEnd}

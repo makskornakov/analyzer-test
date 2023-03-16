@@ -98,7 +98,7 @@ export default function Board({
           if (index === -1) return;
           const placeholder = {
             id: `${movedId}placeholder`,
-            content: 'placeholder',
+            content: `placeholder ${above ? 'above' : 'below'} ${movedId}`,
             placeholder: true,
           };
           if (above) {
