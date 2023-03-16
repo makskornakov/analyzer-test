@@ -9,7 +9,6 @@ interface UploadedFile {
 interface DataInfo {
   length: number;
   keys: string[];
-  levels: number;
   cleanJson: UploadedFile;
 }
 

@@ -8,7 +8,6 @@ type Data<T extends object = object> = {
 interface DataInfo {
   length: number;
   keys: string[];
-  levels: number;
   cleanJson: Data;
 }
 
@@ -25,20 +24,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const dataInfo: DataInfo = {
       length: array.length,
       keys: getUniqueKeysFromArrayOfObjects(cleanJson.data as object[]),
-      levels: 0,
+      // levels: 0, // Previously, here we wanted to get the nested complexity of the object. But this turned out not necessary.
       // @ts-expect-error
       cleanJson,
     };
-
-    //#region get the levels
-    //* this is not working, and is not needed. Remove in the next commit.
-    const levels = array.map((item) => {
-      const keys = Object.keys(item);
-      return keys.length;
-    });
-
-    dataInfo.levels = Math.max(...levels);
-    //#endregion
 
     res.status(200).json({ dataInfo });
   } else {
