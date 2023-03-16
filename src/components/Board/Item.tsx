@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Draggable, { ControlPosition, DraggableEventHandler } from 'react-draggable';
-import { ItemStyled } from './Board.styled';
+import { ItemStyled, ItemPlaceholderStyled } from './Board.styled';
 
 const onStartFunction: DraggableEventHandler = (e, data) => {
   const theDiv = data.node;
@@ -23,14 +23,21 @@ const onStopFunction: DraggableEventHandler = (e, data) => {
 export interface BoardItemProps {
   id: string;
   content: string;
+  placeholder?: boolean;
+  moved?: boolean;
 }
 
 function BoardItem({
   id,
   content,
   dragFunction,
+  onStart,
+  onEnd,
+  placeholder,
 }: BoardItemProps & {
   dragFunction: (id: string) => void;
+  onStart: (id: string) => void;
+  onEnd: (id: string) => void;
 }) {
   const [controlPosition, setControlPosition] = useState<ControlPosition>({
     x: 0,
@@ -43,18 +50,29 @@ function BoardItem({
 
     dragFunction(thisId);
 
-    setControlPosition({
-      x: data.x,
-      y: data.y,
-    });
+    // setControlPosition({
+    //   x: data.x,
+    //   y: data.y,
+    // });
   };
-  return (
+
+  return placeholder ? (
+    <ItemPlaceholderStyled id={id} className="item.placeholder">
+      <span>{content}</span>
+    </ItemPlaceholderStyled>
+  ) : (
     <Draggable
       defaultPosition={{ x: 0, y: 0 }}
       position={controlPosition}
-      onStart={onStartFunction}
+      onStart={(e, data) => {
+        onStart(id);
+        return onStartFunction(e, data);
+      }}
       onDrag={onDragFunction}
-      onStop={onStopFunction}
+      onStop={(e, data) => {
+        onEnd(id);
+        return onStopFunction(e, data);
+      }}
     >
       <ItemStyled id={id}>
         <span>{content}</span>
@@ -66,10 +84,24 @@ export default function Item({
   id,
   content,
   dragFunction,
+  onStart,
+  onEnd,
+  placeholder,
 }: {
   id: string;
   content: string;
   dragFunction: (id: string) => void;
+  onStart: (id: string) => void;
+  onEnd: (id: string) => void;
+  placeholder: boolean | undefined;
 }) {
-  return <BoardItem id={id} content={content} dragFunction={dragFunction} />;
+  return (
+    <BoardItem
+      id={id}
+      content={content}
+      dragFunction={dragFunction}
+      onStart={onStart}
+      onEnd={onEnd}
+    />
+  );
 }

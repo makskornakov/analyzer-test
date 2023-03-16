@@ -1,9 +1,10 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const BoardContainer = styled.div`
   outline: 1px solid red;
 
   display: flex;
+  position: relative;
   user-select: none;
   width: 70%;
   height: 75%;
@@ -21,16 +22,29 @@ export const BoardContainer = styled.div`
   }
 `;
 
-export const ItemStyled = styled.div`
+const mainItemStyle = css`
   /* outline: 1px solid green; */
-  /* box-sizing: content-box; */
-  width: 90%;
+  width: 15em;
+  height: 3em;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 3em;
-  background-color: #f5f5f5;
   color: #000;
+
   border-radius: 0.5em;
-  /* margin-top: 1.5em; */
+`;
+export const ItemStyled = styled.div`
+  background-color: #f5f5f5;
+
+  &:not(.react-draggable-dragging) {
+    transition-property: transform;
+    transition-duration: 0.5s;
+  }
+
+  ${mainItemStyle}
+`;
+
+export const ItemPlaceholderStyled = styled.div`
+  background-color: rgba(255, 255, 255, 0.5);
+  opacity: 0.5;
 `;
