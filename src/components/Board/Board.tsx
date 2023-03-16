@@ -7,6 +7,9 @@ import { BoardItemProps } from './Item';
 export interface BoardData {
   itemArrays: BoardItemProps[][]; // array of arrays of items
 }
+interface BoardListOrder {
+  items: string[][]; // array of arrays of items
+}
 
 interface Position {
   x1: number;
@@ -15,7 +18,7 @@ interface Position {
   y2: number;
 
   placeholder?: boolean;
-  moved?: boolean;
+  // moved?: boolean;
 }
 
 type PositionMap = Map<string, Position>;
@@ -34,48 +37,104 @@ function getRect(item: Element, containerId: string): Position {
   return itemPosition;
 }
 
+interface PlaceHolderState {
+  movedId: string;
+  above: boolean;
+}
+
 export default function Board({
   boardData,
 }: {
   boardData: BoardData;
 }): JSX.Element {
+  const [boardListsOrder, setBoardListsOrder] = useState<BoardListOrder>({
+    items: boardData.itemArrays.map((itemArray) =>
+      itemArray.map((item) => item.id)
+    ),
+  });
+
   const [dynamicBoardData, setDynamicBoardData] = useState(boardData);
   const [ItemsPositions, setItemsPositions] = useState<PositionMap>();
 
-  const [placeHolderId, setPlaceHolderId] = useState<string | null>(null);
+  const [placeHolderState, setPlaceHolderState] =
+    useState<PlaceHolderState | null>(null);
+  // const [draggedId, setDraggedId] = useState<string | null>(null);
+  // update the boardData when the boardListsOrder changes
+  useEffect(() => {
+    const newBoardData = {} as BoardData;
+    // use boardData
+    newBoardData.itemArrays = boardListsOrder.items.map((itemArray) =>
+      itemArray.map((itemId) => {
+        const item = boardData.itemArrays
+          .flat()
+          .find((item) => item.id === itemId);
+        if (!item) throw new Error('Item not found');
+        return item;
+      })
+    );
+    // insert placeholder if needed
+    if (placeHolderState) {
+      const { movedId, above } = placeHolderState;
+      newBoardData.itemArrays.forEach((itemArray) => {
+        const index = itemArray.findIndex((item) => item.id === movedId);
+        if (index === -1) return;
+        const placeholder = {
+          id: `${movedId}placeholder`,
+          content: 'placeholder',
+          placeholder: true,
+        };
+        if (above) {
+          itemArray.splice(index, 0, placeholder);
+        } else {
+          itemArray.splice(index + 1, 0, placeholder);
+        }
+      });
+    } else if (placeHolderState === null) {
+      // remove placeholder from boardData
+      newBoardData.itemArrays.forEach((itemArray) => {
+        const index = itemArray.findIndex((item) => item.placeholder);
+        if (index !== -1) {
+          itemArray.splice(index, 1);
+        }
+      });
+    }
+    setDynamicBoardData(newBoardData);
+  }, [boardData.itemArrays, boardListsOrder, placeHolderState]);
 
   useEffect(() => {
-    const returnArray = new Map<string, Position>();
-
+    const newMap = new Map<string, Position>();
     dynamicBoardData.itemArrays.forEach((itemArray) => {
       itemArray.forEach((item) => {
         const itemElement = document.getElementById(item.id);
         if (!itemElement) return;
-        // transfer placeholder and moved to the position object
+        // const isDragged = item.id === draggedId;
+
+        // const itemPosition = isDragged
+        //   ? prev?.get(item.id) || getRect(itemElement, 'board')
+        //   : getRect(itemElement, 'board');
         const itemPosition = getRect(itemElement, 'board-container');
-        itemPosition.placeholder = item.placeholder;
-        itemPosition.moved = item.moved;
-        returnArray.set(item.id, itemPosition);
+
+        newMap.set(item.id, itemPosition);
       });
     });
-    console.log(returnArray);
-    setItemsPositions(returnArray);
+    console.log(newMap);
+    setItemsPositions(newMap);
   }, [dynamicBoardData]);
 
-  function clearPlaceHolder() {
-    // delete from dynamicBoardData
-    const newBoardData = { ...dynamicBoardData };
-    newBoardData.itemArrays.forEach((itemArray) => {
-      const index = itemArray.findIndex((item) => item.id === placeHolderId);
-      if (index !== -1) {
-        itemArray.splice(index, 1);
-      }
-    });
-    setDynamicBoardData(newBoardData);
-    setPlaceHolderId(null);
-  }
+  // function clearPlaceHolder() {
+  // delete from dynamicBoardData
+  //   const newBoardData = { ...dynamicBoardData };
+  //   newBoardData.itemArrays.forEach((itemArray) => {
+  // const index = itemArray.findIndex((item) => item.id === placeHolderId);
+  //     if (index !== -1) {
+  //       itemArray.splice(index, 1);
+  //     }
+  //   });
+  //   setDynamicBoardData(newBoardData);
+  // setPlaceHolderId(null);
+  // }
   // useEffect(() => {
-  //   // console.log(ItemsPositions);
+  // console.log(ItemsPositions);
   // }, [ItemsPositions]);
 
   function getFoundItems(theId: string, coordinates: Position) {
@@ -116,6 +175,7 @@ export default function Board({
       overlap: 0,
     };
     foundItems.forEach((item, id) => {
+      if (item.placeholder) return;
       // check which is intersecting the most
       const xOverlap =
         Math.max(
@@ -139,7 +199,7 @@ export default function Board({
 
     if (maxOverlap.id) {
       // check that the item is not a placeholder
-      if (maxOverlap.id.includes('placeholder')) return;
+
       // set the background of the item that is intersecting the most to red
       const itemElement = document.getElementById(maxOverlap.id);
       if (itemElement) {
@@ -157,13 +217,23 @@ export default function Board({
         'board-container'
       );
 
-      if (placeHolderId) return;
+      // if (placeHolderId) return;
 
-      const above = grabbedItemPosition.y1 <= intersectingItemPosition.y1;
-      const placeHolder = above
-        ? addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData)
-        : addPlaceholderAboveOrBelow(maxOverlap.id, false, setDynamicBoardData);
-      setPlaceHolderId(placeHolder);
+      // const above = grabbedItemPosition.y1 <= intersectingItemPosition.y1;
+      // const placeHolder = above
+      if (placeHolderState) return;
+      if (grabbedItemPosition.y1 <= intersectingItemPosition.y1)
+        setPlaceHolderState({
+          movedId: `${maxOverlap.id}`,
+          above: true,
+        });
+      else
+        setPlaceHolderState({
+          movedId: `${maxOverlap.id}`,
+          above: false,
+        });
+
+      // // setPlaceHolderId(placeHolder);
       // if (above) {
       //   addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData);
       // } else {
@@ -194,6 +264,27 @@ export default function Board({
               items={itemArray}
               dragFunction={checkIntersection}
               onStart={(id) => {
+                // setDraggedId(id);
+
+                // rerender the ItemsPositions
+                // const returnArray = new Map<string, Position>();
+
+                // dynamicBoardData.itemArrays.forEach((itemArray) => {
+                //   itemArray.forEach((item) => {
+                //     const itemElement = document.getElementById(item.id);
+                //     if (!itemElement) return;
+
+                //     const itemPosition = getRect(
+                //       itemElement,
+                //       'board-container'
+                //     );
+                //     returnArray.set(item.id, itemPosition);
+                //   });
+                // });
+                // console.log(returnArray);
+
+                // setItemsPositions(returnArray);
+
                 const element = document.getElementById(id);
                 if (!element) return;
                 // set position to absolute
@@ -204,24 +295,6 @@ export default function Board({
                 if (!itemPosition) return;
                 element.style.top = `${itemPosition.y1}px`;
                 element.style.left = `${itemPosition.x1}px`;
-
-                // rerender the ItemsPositions
-                const returnArray = new Map<string, Position>();
-
-                dynamicBoardData.itemArrays.forEach((itemArray) => {
-                  itemArray.forEach((item) => {
-                    const itemElement = document.getElementById(item.id);
-                    if (!itemElement) return;
-
-                    const itemPosition = getRect(
-                      itemElement,
-                      'board-container'
-                    );
-                    returnArray.set(item.id, itemPosition);
-                  });
-                });
-                console.log(returnArray);
-                setItemsPositions(returnArray);
               }}
               onEnd={(id) => {
                 const element = document.getElementById(id);
@@ -232,7 +305,6 @@ export default function Board({
                 element.style.top = 'initial';
                 element.style.left = 'initial';
 
-                clearPlaceHolder();
                 const returnArray = new Map<string, Position>();
 
                 dynamicBoardData.itemArrays.forEach((itemArray) => {
@@ -245,12 +317,24 @@ export default function Board({
                       'board-container'
                     );
                     itemPosition.placeholder = item.placeholder;
-                    itemPosition.moved = item.moved;
                     returnArray.set(item.id, itemPosition);
                   });
                 });
                 console.log(returnArray);
-                setItemsPositions(returnArray);
+
+                setPlaceHolderState(null);
+                // ! swap test
+                // const newBoardListsOrder = { ...boardListsOrder };
+                // newBoardListsOrder.items[0].push(
+                //   newBoardListsOrder.items[0].shift()!
+                // );
+                // setBoardListsOrder(newBoardListsOrder);
+
+                //
+
+                // setItemsPositions(returnArray);
+                // clearPlaceHolder();
+                // setDraggedId(null);
               }}
             />
           </div>
@@ -279,10 +363,10 @@ function addPlaceholderAboveOrBelow(
 
     const newItemArray = [...prev.itemArrays[itemArrayIndex]];
     // check if the item that is being moved has the moved property
-    if (newItemArray[itemIndex].moved) return prev;
+    // if (newItemArray[itemIndex].moved) return prev;
     // if (newItemArray[itemIndex].placeholder) return prev;
     // add moved: true to the item that is being moved
-    newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
+    // newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
     newItemArray.splice(itemIndex + (above ? 0 : 1), 0, {
       id: `${id}placeholder`,
       placeholder: true,
