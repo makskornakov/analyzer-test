@@ -24,25 +24,21 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const cleanJson = getUsableData(cleanJSON(data));
     const dataInfo: DataInfo = {
       length: array.length,
-      keys: [],
+      keys: getUniqueKeysFromArrayOfObjects(cleanJson.data as object[]),
       levels: 0,
       // @ts-expect-error
       cleanJson,
     };
 
-    // get the keys
-    array.forEach((item) => {
-      const keys = Object.keys(item);
-      dataInfo.keys = [...dataInfo.keys, ...keys];
-    });
-
-    // get the levels
+    //#region get the levels
+    //* this is not working, and is not needed. Remove in the next commit.
     const levels = array.map((item) => {
       const keys = Object.keys(item);
       return keys.length;
     });
 
     dataInfo.levels = Math.max(...levels);
+    //#endregion
 
     res.status(200).json({ dataInfo });
   } else {
@@ -105,6 +101,12 @@ function flattenNestedObject<T extends object>(obj: T, prefix = ''): T {
     }
     return acc;
   }, {}) as T;
+}
+
+function getUniqueKeysFromArrayOfObjects(arrayOfObjects: object[]) {
+  const uniqueKeys = new Set(arrayOfObjects.map((item) => Object.keys(item)).flat());
+  const arrUniqueKeys = Array.from(uniqueKeys);
+  return arrUniqueKeys;
 }
 
 function getUsableData(data: Data) {
