@@ -34,9 +34,15 @@ function getRect(item: Element, containerId: string): Position {
   return itemPosition;
 }
 
-export default function Board({ boardData }: { boardData: BoardData }): JSX.Element {
+export default function Board({
+  boardData,
+}: {
+  boardData: BoardData;
+}): JSX.Element {
   const [dynamicBoardData, setDynamicBoardData] = useState(boardData);
   const [ItemsPositions, setItemsPositions] = useState<PositionMap>();
+
+  const [placeHolderId, setPlaceHolderId] = useState<string | null>(null);
 
   useEffect(() => {
     const returnArray = new Map<string, Position>();
@@ -56,6 +62,18 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
     setItemsPositions(returnArray);
   }, [dynamicBoardData]);
 
+  function clearPlaceHolder() {
+    // delete from dynamicBoardData
+    const newBoardData = { ...dynamicBoardData };
+    newBoardData.itemArrays.forEach((itemArray) => {
+      const index = itemArray.findIndex((item) => item.id === placeHolderId);
+      if (index !== -1) {
+        itemArray.splice(index, 1);
+      }
+    });
+    setDynamicBoardData(newBoardData);
+    setPlaceHolderId(null);
+  }
   // useEffect(() => {
   //   // console.log(ItemsPositions);
   // }, [ItemsPositions]);
@@ -100,12 +118,19 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
     foundItems.forEach((item, id) => {
       // check which is intersecting the most
       const xOverlap =
-        Math.max(0, Math.min(coordinates.x2, item.x2) - Math.max(coordinates.x1, item.x1)) /
+        Math.max(
+          0,
+          Math.min(coordinates.x2, item.x2) - Math.max(coordinates.x1, item.x1)
+        ) /
         (coordinates.x2 - coordinates.x1);
       const yOverlap =
-        Math.max(0, Math.min(coordinates.y2, item.y2) - Math.max(coordinates.y1, item.y1)) /
+        Math.max(
+          0,
+          Math.min(coordinates.y2, item.y2) - Math.max(coordinates.y1, item.y1)
+        ) /
         (coordinates.y2 - coordinates.y1);
       const overlap = xOverlap * yOverlap;
+      console.log(overlap);
       if (overlap > maxOverlap.overlap && overlap > 0.02) {
         maxOverlap.id = id;
         maxOverlap.overlap = overlap;
@@ -127,30 +152,24 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
       const grabbedItemPosition = getRect(grabbedItem, 'board-container');
       const intersectingItem = document.getElementById(maxOverlap.id);
       if (!intersectingItem) return;
-      const intersectingItemPosition = getRect(intersectingItem, 'board-container');
+      const intersectingItemPosition = getRect(
+        intersectingItem,
+        'board-container'
+      );
+
+      if (placeHolderId) return;
 
       const above = grabbedItemPosition.y1 <= intersectingItemPosition.y1;
-      if (above) {
-        addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData);
-      } else {
-        addPlaceholderAboveOrBelow(maxOverlap.id, false, setDynamicBoardData);
-      }
+      const placeHolder = above
+        ? addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData)
+        : addPlaceholderAboveOrBelow(maxOverlap.id, false, setDynamicBoardData);
+      setPlaceHolderId(placeHolder);
+      // if (above) {
+      //   addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData);
+      // } else {
+      //   addPlaceholderAboveOrBelow(maxOverlap.id, false, setDynamicBoardData);
+      // }
     }
-    const returnArray = new Map<string, Position>();
-
-    dynamicBoardData.itemArrays.forEach((itemArray) => {
-      itemArray.forEach((item) => {
-        const itemElement = document.getElementById(item.id);
-        if (!itemElement) return;
-        // transfer placeholder and moved to the position object
-        const itemPosition = getRect(itemElement, 'board-container');
-        itemPosition.placeholder = item.placeholder;
-        itemPosition.moved = item.moved;
-        returnArray.set(item.id, itemPosition);
-      });
-    });
-    console.log(returnArray);
-    setItemsPositions(returnArray);
 
     //! don't delete this
     // find the new position of the dragged item and set it
@@ -194,7 +213,10 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
                     const itemElement = document.getElementById(item.id);
                     if (!itemElement) return;
 
-                    const itemPosition = getRect(itemElement, 'board-container');
+                    const itemPosition = getRect(
+                      itemElement,
+                      'board-container'
+                    );
                     returnArray.set(item.id, itemPosition);
                   });
                 });
@@ -209,6 +231,8 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
                 // set top and left to the current position
                 element.style.top = 'initial';
                 element.style.left = 'initial';
+
+                clearPlaceHolder();
                 const returnArray = new Map<string, Position>();
 
                 dynamicBoardData.itemArrays.forEach((itemArray) => {
@@ -216,7 +240,10 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
                     const itemElement = document.getElementById(item.id);
                     if (!itemElement) return;
                     // transfer placeholder and moved to the position object
-                    const itemPosition = getRect(itemElement, 'board-container');
+                    const itemPosition = getRect(
+                      itemElement,
+                      'board-container'
+                    );
                     itemPosition.placeholder = item.placeholder;
                     itemPosition.moved = item.moved;
                     returnArray.set(item.id, itemPosition);
@@ -236,22 +263,24 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
 function addPlaceholderAboveOrBelow(
   id: string,
   above: boolean,
-  setDynamicBoardData: React.Dispatch<React.SetStateAction<BoardData>>,
-) {
+  setDynamicBoardData: React.Dispatch<React.SetStateAction<BoardData>>
+): string {
   // Add a placeholder above or below the item in the BoardList
   setDynamicBoardData((prev) => {
     // find id in prev.itemArrays
     const itemArrayIndex = prev.itemArrays.findIndex((itemArray) =>
-      itemArray.find((item) => item.id === id),
+      itemArray.find((item) => item.id === id)
     );
     if (itemArrayIndex === -1) return prev;
-    const itemIndex = prev.itemArrays[itemArrayIndex].findIndex((item) => item.id === id);
+    const itemIndex = prev.itemArrays[itemArrayIndex].findIndex(
+      (item) => item.id === id
+    );
     if (itemIndex === -1) return prev;
 
     const newItemArray = [...prev.itemArrays[itemArrayIndex]];
     // check if the item that is being moved has the moved property
     if (newItemArray[itemIndex].moved) return prev;
-    if (newItemArray[itemIndex].placeholder) return prev;
+    // if (newItemArray[itemIndex].placeholder) return prev;
     // add moved: true to the item that is being moved
     newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
     newItemArray.splice(itemIndex + (above ? 0 : 1), 0, {
@@ -263,6 +292,7 @@ function addPlaceholderAboveOrBelow(
     newItemArrays[itemArrayIndex] = newItemArray;
     return { ...prev, itemArrays: newItemArrays };
   });
+  return `${id}placeholder`;
 
   // const placeholderExists = document.getElementById(`${id}placeholder`);
   // if (placeholderExists) {
