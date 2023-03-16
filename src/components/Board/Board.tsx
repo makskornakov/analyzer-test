@@ -58,7 +58,7 @@ export default function Board({
 
   const [placeHolderState, setPlaceHolderState] =
     useState<PlaceHolderState | null>(null);
-  // const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [lastDraggedId, setLastDraggedId] = useState<string | null>(null);
 
   // update the boardData when the boardListsOrder changes
   useEffect(() => {
@@ -112,86 +112,25 @@ export default function Board({
     });
   }, [placeHolderState]);
 
-  // function controlPlaceHolder(newBoardData: BoardData): BoardData {
-  //   // insert placeholder if needed
-  //   if (placeHolderState) {
-  //     const { movedId, above } = placeHolderState;
-  //     newBoardData.itemArrays.forEach((itemArray) => {
-  //       const index = itemArray.findIndex((item) => item.id === movedId);
-  //       if (index === -1) return;
-  //       const placeholder = {
-  //         id: `${movedId}placeholder`,
-  //         content: 'placeholder',
-  //         placeholder: true,
-  //       };
-  //       if (above) {
-  //         itemArray.splice(index, 0, placeholder);
-  //       } else {
-  //         itemArray.splice(index + 1, 0, placeholder);
-  //       }
-  //     });
-  //   } else if (placeHolderState === null) {
-  //     // remove placeholder from boardData
-  //     newBoardData.itemArrays.forEach((itemArray) => {
-  //       const index = itemArray.findIndex((item) => item.placeholder);
-  //       if (index !== -1) {
-  //         itemArray.splice(index, 1);
-  //       }
-  //     });
-  //   }
-  //   return newBoardData;
-  // }
-  // use memo to render boardData in the boardListOrder order
-  const boardDataToRender = useMemo((): BoardData => {
-    const newBoardData = { ...boardData };
-
-    newBoardData.itemArrays = boardListsOrder.items.map((itemArray) =>
-      itemArray.map((itemId) => {
-        const item = boardData.itemArrays
-          .flat()
-          .find((item) => item.id === itemId);
-        if (!item) throw new Error('Item not found');
-        return item;
-      })
-    );
-    return newBoardData;
-  }, [boardData, boardListsOrder.items]);
-
   useEffect(() => {
-    const newMap = new Map<string, Position>();
-    dynamicBoardData.itemArrays.forEach((itemArray) => {
-      itemArray.forEach((item) => {
-        const itemElement = document.getElementById(item.id);
-        if (!itemElement) return;
-        // const isDragged = item.id === draggedId;
+    setItemsPositions((prev) => {
+      const newMap = new Map<string, Position>();
+      dynamicBoardData.itemArrays.forEach((itemArray) => {
+        itemArray.forEach((item) => {
+          const itemElement = document.getElementById(item.id);
+          if (!itemElement) return;
+          const isDragged = item.id === lastDraggedId;
 
-        // const itemPosition = isDragged
-        //   ? prev?.get(item.id) || getRect(itemElement, 'board')
-        //   : getRect(itemElement, 'board');
-        const itemPosition = getRect(itemElement, 'board-container');
+          const itemPosition = isDragged
+            ? prev?.get(item.id) || getRect(itemElement, 'board-container')
+            : getRect(itemElement, 'board-container');
 
-        newMap.set(item.id, itemPosition);
+          newMap.set(item.id, itemPosition);
+        });
       });
+      return newMap;
     });
-    console.log(newMap);
-    setItemsPositions(newMap);
-  }, [dynamicBoardData]);
-
-  // function clearPlaceHolder() {
-  // delete from dynamicBoardData
-  //   const newBoardData = { ...dynamicBoardData };
-  //   newBoardData.itemArrays.forEach((itemArray) => {
-  // const index = itemArray.findIndex((item) => item.id === placeHolderId);
-  //     if (index !== -1) {
-  //       itemArray.splice(index, 1);
-  //     }
-  //   });
-  //   setDynamicBoardData(newBoardData);
-  // setPlaceHolderId(null);
-  // }
-  // useEffect(() => {
-  // console.log(ItemsPositions);
-  // }, [ItemsPositions]);
+  }, [dynamicBoardData, lastDraggedId]);
 
   function getFoundItems(theId: string, coordinates: Position) {
     const foundItems = new Map<string, Position>();
@@ -273,28 +212,12 @@ export default function Board({
         'board-container'
       );
 
-      // if (placeHolderId) return;
-
-      // const above = grabbedItemPosition.y1 <= intersectingItemPosition.y1;
-      // const placeHolder = above
       if (placeHolderState) return;
-      if (grabbedItemPosition.y1 <= intersectingItemPosition.y1)
-        setPlaceHolderState({
-          movedId: `${maxOverlap.id}`,
-          above: true,
-        });
-      else
-        setPlaceHolderState({
-          movedId: `${maxOverlap.id}`,
-          above: false,
-        });
-
-      // // setPlaceHolderId(placeHolder);
-      // if (above) {
-      //   addPlaceholderAboveOrBelow(maxOverlap.id, true, setDynamicBoardData);
-      // } else {
-      //   addPlaceholderAboveOrBelow(maxOverlap.id, false, setDynamicBoardData);
-      // }
+      const above = grabbedItemPosition.y1 <= intersectingItemPosition.y1;
+      setPlaceHolderState({
+        movedId: `${maxOverlap.id}`,
+        above,
+      });
     }
 
     //! don't delete this
@@ -320,26 +243,7 @@ export default function Board({
               items={itemArray}
               dragFunction={checkIntersection}
               onStart={(id) => {
-                // setDraggedId(id);
-
-                // rerender the ItemsPositions
-                // const returnArray = new Map<string, Position>();
-
-                // dynamicBoardData.itemArrays.forEach((itemArray) => {
-                //   itemArray.forEach((item) => {
-                //     const itemElement = document.getElementById(item.id);
-                //     if (!itemElement) return;
-
-                //     const itemPosition = getRect(
-                //       itemElement,
-                //       'board-container'
-                //     );
-                //     returnArray.set(item.id, itemPosition);
-                //   });
-                // });
-                // console.log(returnArray);
-
-                // setItemsPositions(returnArray);
+                setLastDraggedId(id);
 
                 const element = document.getElementById(id);
                 if (!element) return;
@@ -355,6 +259,7 @@ export default function Board({
               onEnd={(id) => {
                 const element = document.getElementById(id);
                 if (!element) return;
+
                 // set position to initial
                 element.style.position = 'initial';
                 // set top and left to the current position
@@ -399,55 +304,3 @@ export default function Board({
     </>
   );
 }
-
-// function addPlaceholderAboveOrBelow(
-//   id: string,
-//   above: boolean,
-//   setDynamicBoardData: React.Dispatch<React.SetStateAction<BoardData>>
-// ): string {
-//   // Add a placeholder above or below the item in the BoardList
-//   setDynamicBoardData((prev) => {
-//     // find id in prev.itemArrays
-//     const itemArrayIndex = prev.itemArrays.findIndex((itemArray) =>
-//       itemArray.find((item) => item.id === id)
-//     );
-//     if (itemArrayIndex === -1) return prev;
-//     const itemIndex = prev.itemArrays[itemArrayIndex].findIndex(
-//       (item) => item.id === id
-//     );
-//     if (itemIndex === -1) return prev;
-
-//     const newItemArray = [...prev.itemArrays[itemArrayIndex]];
-//     // check if the item that is being moved has the moved property
-//     // if (newItemArray[itemIndex].moved) return prev;
-//     // if (newItemArray[itemIndex].placeholder) return prev;
-//     // add moved: true to the item that is being moved
-//     // newItemArray[itemIndex] = { ...newItemArray[itemIndex], moved: true };
-//     newItemArray.splice(itemIndex + (above ? 0 : 1), 0, {
-//       id: `${id}placeholder`,
-//       placeholder: true,
-//       content: 'placeholder',
-//     });
-//     const newItemArrays = [...prev.itemArrays];
-//     newItemArrays[itemArrayIndex] = newItemArray;
-//     return { ...prev, itemArrays: newItemArrays };
-//   });
-//   return `${id}placeholder`;
-
-// const placeholderExists = document.getElementById(`${id}placeholder`);
-// if (placeholderExists) {
-//   placeholderExists.parentElement?.removeChild(placeholderExists);
-// }
-// const theDiv = document.getElementById(id);
-// if (!theDiv) return;
-// const theDivParent = theDiv.parentElement;
-// if (!theDivParent) return;
-// const copyDiv = theDiv.cloneNode() as HTMLElement;
-// copyDiv.id = copyDiv.id + 'placeholder';
-// copyDiv.style.opacity = '0.4';
-// copyDiv.style.color = 'transparent';
-// theDivParent.insertBefore(copyDiv, theDiv);
-// use PlaceholderItemStyled
-// type insertProps = <T>(node: T, child: Node | null) => T;
-// theDivParent?.insertBefore()
-// }
