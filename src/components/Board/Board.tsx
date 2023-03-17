@@ -187,7 +187,7 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
       if (placeholder && placeHolderParent) {
         const overlap = getOverlap(coordinates, placeholder);
         const parentOverlap = getOverlap(coordinates, placeHolderParent);
-        console.log(overlap, parentOverlap);
+        // console.log(overlap, parentOverlap);
         // if no overlap, remove the placeholder
         const wrongSide = above
           ? coordinates.y1 > placeHolderParent.y1
@@ -307,6 +307,8 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
                   (item) => item.id === id,
                 );
                 if (itemIndex === -1) return;
+                // if item is the only one in the list, don't add a placeholder
+                if (dynamicBoardData.itemArrays[index].length === 1) return;
                 const notLast = itemIndex !== dynamicBoardData.itemArrays[index].length - 1;
                 const targetItemIndex = notLast ? itemIndex + 1 : itemIndex - 1;
                 const targetItemId = dynamicBoardData.itemArrays[index][targetItemIndex].id;
@@ -323,13 +325,75 @@ export default function Board({ boardData }: { boardData: BoardData }): JSX.Elem
                 const element = document.getElementById(id);
                 if (!element) return;
 
-                setPlaceHolderState(null);
-                setDraggedItemPosition(null);
-                // set position to initial
                 element.style.position = 'initial';
                 // set top and left to the current position
                 element.style.top = 'initial';
                 element.style.left = 'initial';
+
+                if (placeHolderState) {
+                  const { movedId, above } = placeHolderState;
+                  const coordinates = getRect(element, 'board-container');
+                  const placeholderId = `${movedId}placeholder`;
+                  const placeholderCoordinates = ItemsPositions?.get(placeholderId);
+                  const placeholderParentCoordinates = ItemsPositions?.get(movedId);
+
+                  if (placeholderCoordinates && coordinates && placeholderParentCoordinates) {
+                    const overlap = getOverlap(coordinates, placeholderCoordinates);
+                    const overlapParent = getOverlap(coordinates, placeholderParentCoordinates);
+
+                    console.log(overlap, overlapParent);
+                    // if still intersecting, swap the items
+                    if (overlap.overlap > 0.02 || overlapParent.overlap > 0.02) {
+                      const newBoardListsOrder = { ...boardListsOrder };
+                      const movedIdIndex = newBoardListsOrder.items[index].findIndex(
+                        (item) => item === id,
+                      );
+                      let placeholderIdIndex = -1;
+                      let placeholderListIndex = -1;
+                      newBoardListsOrder.items.forEach((list, listIndex) => {
+                        const index = list.findIndex((item) => item === movedId);
+                        if (index !== -1) {
+                          placeholderIdIndex = index;
+                          placeholderListIndex = listIndex;
+                        }
+                      });
+                      console.log(placeholderIdIndex, placeholderListIndex);
+                      if (placeholderIdIndex === -1 || placeholderListIndex === -1) return;
+
+                      // swap the items in the boardListsOrder above and below
+                      // ! here it has to be checked if the placeholder is on the same place as the dragged item's initial position
+
+                      // save the item that is being dragged
+                      const draggedItem = newBoardListsOrder.items[index][movedIdIndex];
+                      // remove the item that is being dragged
+                      newBoardListsOrder.items[index].splice(movedIdIndex, 1);
+                      // add the item that is being dragged to the placeholder position
+                      newBoardListsOrder.items[placeholderListIndex].splice(
+                        placeholderIdIndex + (above ? 0 : 1),
+                        0,
+                        draggedItem,
+                      );
+
+                      setPlaceHolderState(null);
+                      setLastDraggedId(null);
+                      setBoardListsOrder(newBoardListsOrder);
+
+                      setDraggedItemPosition(null);
+
+                      console.log(
+                        'swap',
+                        above,
+                        movedIdIndex,
+                        placeholderIdIndex,
+                        newBoardListsOrder,
+                      );
+                    }
+                  }
+                }
+
+                setPlaceHolderState(null);
+                setDraggedItemPosition(null);
+                // set position to initial
 
                 // ! swap test
                 // const newBoardListsOrder = { ...boardListsOrder };
