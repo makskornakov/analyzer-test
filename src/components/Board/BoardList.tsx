@@ -25,7 +25,7 @@ export default function BoardList({
           <Draggable
             key={item.id}
             defaultPosition={{ x: 0, y: 0 }}
-            // position={null}
+            position={{ x: 0, y: 0 }}
             // grid={[25, 25]}
             // scale={1}
             // onStart={this.handleStart}
