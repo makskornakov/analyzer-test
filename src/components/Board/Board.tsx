@@ -7,7 +7,6 @@ export interface BoardItem {
   content: string;
 }
 export type BoardListContent = BoardItem[];
-// map of board list key and board list
 export type BoardContent = Map<string, BoardListContent>;
 
 export default function Board() {
@@ -18,7 +17,7 @@ export default function Board() {
         style={{
           display: 'flex',
           flexDirection: 'row',
-          justifyContent: 'space-around',
+          justifyContent: 'space-evenly',
           width: '90%',
           height: '85%',
           outline: '1px solid #f55500',
@@ -28,8 +27,8 @@ export default function Board() {
           <BoardList
             key={key}
             boardList={exampleBoardContent.get(key) as BoardListContent}
-            width="30em"
-            itemHeight="5em"
+            width="20em"
+            itemHeight="3em"
             gap="1em"
           />
         ))}
