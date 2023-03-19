@@ -26,6 +26,7 @@ export default function BoardList({
             key={item.id}
             defaultPosition={{ x: 0, y: 0 }}
             position={{ x: 0, y: 0 }}
+            nodeRef={undefined}
             // grid={[25, 25]}
             // scale={1}
             // onStart={this.handleStart}
@@ -33,6 +34,7 @@ export default function BoardList({
             // onStop={this.handleStop}
           >
             <div
+              id={item.id.toString()}
               style={{
                 width: '100%',
                 height: itemHeight,
