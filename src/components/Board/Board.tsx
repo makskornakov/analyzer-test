@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableEvent, DraggableData } from 'react-draggable';
 import BoardList from './BoardList';
 import { exampleBoardContent } from './example';
@@ -15,6 +15,13 @@ export interface Position {
   y1: number;
   x2: number;
   y2: number;
+}
+
+export interface Placeholder {
+  id: string;
+  height: string;
+  above: boolean;
+  instant: boolean;
 }
 
 function getRect(element: HTMLElement, container: HTMLElement): Position {
@@ -52,31 +59,85 @@ export default function Board() {
     new Map()
   );
 
+  const [placeholder, setPlaceholder] = useState<Placeholder | null>(null);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [boardListInAction, setBoardListInAction] = useState<string | null>(
+    null
+  );
+
+  // const getAndSetItemPositions = useMemo
+  const getItemPositions = useMemo(() => {
+    return () => {
+      const itemPositions = new Map();
+      Array.from(boardContent.keys()).forEach((key) => {
+        const boardListContent = boardContent.get(key) as BoardListContent;
+        boardListContent.forEach((item) => {
+          const itemElement = document.getElementById(item.id.toString());
+          if (itemElement) {
+            const rect = getRect(
+              itemElement,
+              container.current as HTMLDivElement
+            );
+            itemPositions.set(item.id.toString(), rect);
+          }
+        });
+      });
+      console.log('itemPositions', itemPositions);
+      setItemPositions(itemPositions);
+    };
+  }, [boardContent]);
+
+  function findTheMostIntersectingBoardList(currentPosition: Position) {
+    let mostIntersectingBoardList: string | null = null;
+    let mostIntersectingPercentage = 0;
+    boardPositions.forEach((rect, key) => {
+      const intersectionPercentage = getIntersectionPercentage(
+        currentPosition,
+        rect
+      );
+      if (intersectionPercentage > mostIntersectingPercentage) {
+        mostIntersectingBoardList = key;
+        mostIntersectingPercentage = intersectionPercentage;
+      }
+    });
+    return mostIntersectingBoardList;
+  }
+
   useEffect(() => {
     const boardPositions = new Map();
-    const itemPositions = new Map();
     Array.from(boardContent.keys()).forEach((key) => {
       const boardList = document.getElementById(key);
       if (boardList) {
         const rect = getRect(boardList, container.current as HTMLDivElement);
         boardPositions.set(key, rect);
       }
-      // set item positions
-      const boardListContent = boardContent.get(key) as BoardListContent;
-      boardListContent.forEach((item) => {
-        const itemElement = document.getElementById(item.id.toString());
-        if (itemElement) {
-          const rect = getRect(
-            itemElement,
-            container.current as HTMLDivElement
-          );
-          itemPositions.set(item.id.toString(), rect);
-        }
-      });
     });
     setBoardPositions(boardPositions);
-    setItemPositions(itemPositions);
-  }, [boardContent]);
+  }, [boardContent, getItemPositions, draggedItem, placeholder]);
+
+  useEffect(() => {
+    // if not instant, wait for the animation to finish
+    //! now set to constant 200 as it is used everywhere
+
+    if (placeholder && !placeholder?.instant)
+      setTimeout(() => getItemPositions(), 200);
+    else getItemPositions();
+  }, [getItemPositions, placeholder]);
+
+  useEffect(() => {
+    Array.from(boardContent.keys()).forEach((key) => {
+      const boardList = document.getElementById(key);
+      if (boardList) {
+        boardList.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+      }
+    });
+    if (boardListInAction) {
+      const boardList = document.getElementById(boardListInAction);
+      if (boardList) {
+        boardList.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      }
+    }
+  }, [boardListInAction, boardContent]);
 
   function handleDrag(e: DraggableEvent, data: DraggableData) {
     const { x, y } = data;
@@ -89,25 +150,23 @@ export default function Board() {
       x2: initialPosition.x2 + x,
       y2: initialPosition.y2 + y,
     };
-    // check intersection with all board lists and if there is an intersection set background color of the board list to rgba(255, 0, 0, 0.5)
-    boardPositions.forEach((rect, key) => {
-      const intersectionPercentage = getIntersectionPercentage(
-        currentPosition,
-        rect
-      );
-      const boardList = document.getElementById(key);
-      if (boardList) {
-        boardList.style.backgroundColor =
-          intersectionPercentage > 0.1
-            ? 'rgba(255, 0, 255, 0.2)'
-            : 'rgba(0, 0, 0, 0)';
-        boardList.style.outlineWidth =
-          intersectionPercentage > 0.1 ? '4px' : '1px';
-      }
-      // if (intersectionPercentage !== 0) console.log(intersectionPercentage);
-    });
+
+    const mostIntersectingBoardList =
+      findTheMostIntersectingBoardList(currentPosition);
+
+    setBoardListInAction(mostIntersectingBoardList);
   }
-  function onDragStart(e: DraggableEvent, data: DraggableData) {}
+  function onDragStart(e: DraggableEvent, data: DraggableData) {
+    const id = data.node.id;
+    setDraggedItem(id);
+    // const nextItem = Number(id) + 1;
+    // setPlaceholder({
+    //   id: nextItem.toString(),
+    //   height: data.node.style.height,
+    //   above: true,
+    //   instant: true,
+    // });
+  }
 
   function onDragStop(e: DraggableEvent, data: DraggableData) {}
 
@@ -132,6 +191,7 @@ export default function Board() {
             id={key}
             boardList={boardContent.get(key) as BoardListContent}
             itemPositions={itemPositions}
+            placeholder={placeholder}
             width="20em"
             itemHeight="3em"
             gap="1em"
