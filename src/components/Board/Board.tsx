@@ -24,7 +24,7 @@ export interface Placeholder {
   instant: boolean;
 }
 
-function getRect(element: HTMLElement, container: HTMLElement): Position {
+export function getRect(element: HTMLElement, container: HTMLElement): Position {
   const rect = element.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   return {
@@ -48,22 +48,15 @@ function getIntersectionPercentage(rect: Position, checkableRect: Position) {
 
 export default function Board() {
   const container = useRef<HTMLDivElement>(null);
-  const [boardContent, setBoardContent] =
-    useState<BoardContent>(exampleBoardContent);
+  const [boardContent, setBoardContent] = useState<BoardContent>(exampleBoardContent);
 
-  const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(
-    new Map()
-  );
+  const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(new Map());
 
-  const [itemPositions, setItemPositions] = useState<Map<string, Position>>(
-    new Map()
-  );
+  const [itemPositions, setItemPositions] = useState<Map<string, Position>>(new Map());
 
   const [placeholder, setPlaceholder] = useState<Placeholder | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [boardListInAction, setBoardListInAction] = useState<string | null>(
-    null
-  );
+  const [boardListInAction, setBoardListInAction] = useState<string | null>(null);
 
   // const getAndSetItemPositions = useMemo
   const getItemPositions = useMemo(() => {
@@ -74,10 +67,7 @@ export default function Board() {
         boardListContent.forEach((item) => {
           const itemElement = document.getElementById(item.id.toString());
           if (itemElement) {
-            const rect = getRect(
-              itemElement,
-              container.current as HTMLDivElement
-            );
+            const rect = getRect(itemElement, container.current as HTMLDivElement);
             itemPositions.set(item.id.toString(), rect);
           }
         });
@@ -91,10 +81,7 @@ export default function Board() {
     let mostIntersectingBoardList: string | null = null;
     let mostIntersectingPercentage = 0;
     boardPositions.forEach((rect, key) => {
-      const intersectionPercentage = getIntersectionPercentage(
-        currentPosition,
-        rect
-      );
+      const intersectionPercentage = getIntersectionPercentage(currentPosition, rect);
       if (intersectionPercentage > mostIntersectingPercentage) {
         mostIntersectingBoardList = key;
         mostIntersectingPercentage = intersectionPercentage;
@@ -119,8 +106,7 @@ export default function Board() {
     // if not instant, wait for the animation to finish
     //! now set to constant 200 as it is used everywhere
 
-    if (placeholder && !placeholder?.instant)
-      setTimeout(() => getItemPositions(), 200);
+    if (placeholder && !placeholder?.instant) setTimeout(() => getItemPositions(), 200);
     else getItemPositions();
   }, [getItemPositions, placeholder, draggedItem]);
 
@@ -156,8 +142,7 @@ export default function Board() {
       y2: initialPosition.y2 + y,
     };
 
-    const mostIntersectingBoardList =
-      findTheMostIntersectingBoardList(currentPosition);
+    const mostIntersectingBoardList = findTheMostIntersectingBoardList(currentPosition);
 
     setBoardListInAction(mostIntersectingBoardList);
   }
@@ -172,12 +157,8 @@ export default function Board() {
     if (boardListKey) {
       // if item is the first one set placeholder above the next item in the list
       // else set placeholder below the previous item in the list
-      const boardListContent = boardContent.get(
-        boardListKey
-      ) as BoardListContent;
-      const itemIndex = boardListContent.findIndex(
-        (item) => item.id.toString() === id
-      );
+      const boardListContent = boardContent.get(boardListKey) as BoardListContent;
+      const itemIndex = boardListContent.findIndex((item) => item.id.toString() === id);
       if (itemIndex === 0) {
         const nextItem = boardListContent[itemIndex + 1];
         setPlaceholder({
