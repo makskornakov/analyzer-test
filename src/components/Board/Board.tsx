@@ -122,7 +122,7 @@ export default function Board() {
     if (placeholder && !placeholder?.instant)
       setTimeout(() => getItemPositions(), 200);
     else getItemPositions();
-  }, [getItemPositions, placeholder]);
+  }, [getItemPositions, placeholder, draggedItem]);
 
   useEffect(() => {
     Array.from(boardContent.keys()).forEach((key) => {
@@ -138,6 +138,11 @@ export default function Board() {
       }
     }
   }, [boardListInAction, boardContent]);
+
+  function findPlaceholder(y: number) {
+    // the input is the center y position of the dragged item
+    //
+  }
 
   function handleDrag(e: DraggableEvent, data: DraggableData) {
     const { x, y } = data;
@@ -156,9 +161,42 @@ export default function Board() {
 
     setBoardListInAction(mostIntersectingBoardList);
   }
+
   function onDragStart(e: DraggableEvent, data: DraggableData) {
     const id = data.node.id;
     setDraggedItem(id);
+    const boardListKey = Array.from(boardContent.keys()).find((key) => {
+      const boardListContent = boardContent.get(key) as BoardListContent;
+      return boardListContent.find((item) => item.id.toString() === id);
+    });
+    if (boardListKey) {
+      // if item is the first one set placeholder above the next item in the list
+      // else set placeholder below the previous item in the list
+      const boardListContent = boardContent.get(
+        boardListKey
+      ) as BoardListContent;
+      const itemIndex = boardListContent.findIndex(
+        (item) => item.id.toString() === id
+      );
+      if (itemIndex === 0) {
+        const nextItem = boardListContent[itemIndex + 1];
+        setPlaceholder({
+          id: nextItem.id.toString(),
+          height: data.node.style.height,
+          above: true,
+          instant: true,
+        });
+      } else {
+        const previousItem = boardListContent[itemIndex - 1];
+        setPlaceholder({
+          id: previousItem.id.toString(),
+          height: data.node.style.height,
+          above: false,
+          instant: true,
+        });
+      }
+    }
+
     // const nextItem = Number(id) + 1;
     // setPlaceholder({
     //   id: nextItem.toString(),
@@ -168,7 +206,12 @@ export default function Board() {
     // });
   }
 
-  function onDragStop(e: DraggableEvent, data: DraggableData) {}
+  function onDragStop(e: DraggableEvent, data: DraggableData) {
+    setPlaceholder(null);
+    setTimeout(() => {
+      setDraggedItem(null);
+    }, 200);
+  }
 
   return (
     <>
@@ -192,6 +235,7 @@ export default function Board() {
             boardList={boardContent.get(key) as BoardListContent}
             itemPositions={itemPositions}
             placeholder={placeholder}
+            dragItem={draggedItem}
             width="20em"
             itemHeight="3em"
             gap="1em"

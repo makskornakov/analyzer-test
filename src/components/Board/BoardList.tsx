@@ -8,6 +8,7 @@ export default function BoardList({
   boardList,
   itemPositions,
   placeholder,
+  dragItem,
   width,
   itemHeight,
   gap,
@@ -19,6 +20,7 @@ export default function BoardList({
   boardList: BoardListContent;
   itemPositions: Map<string, Position>;
   placeholder: Placeholder | null;
+  dragItem: string | null;
   width: string;
   itemHeight: string;
   gap: string;
@@ -28,18 +30,43 @@ export default function BoardList({
 }) {
   // add margin to the placeholder element
   useEffect(() => {
-    // set initial styles to all items
+    // set initial styles to all items but skip the placeholder item and the item that is being dragged
     boardList.forEach((item) => {
+      if (item.id.toString() === placeholder?.id) return;
+      if (item.id.toString() === dragItem) return;
       const itemElement = document.getElementById(item.id.toString());
       if (itemElement) {
+        itemElement.style.transition = '0s';
         itemElement.style.marginBottom = gap;
         itemElement.style.marginTop = '0px';
+        setTimeout(() => {
+          itemElement.style.transition = '0.2s';
+        }, 0);
       }
     });
 
     if (placeholder) {
       const placeholderElement = document.getElementById(placeholder.id);
-      const space = `calc(${gap} + ${placeholder.height})`;
+      // if the placeholder is going to be the first item or the last item in the list dont multiply the gap by 2
+      // find the index of the placeholder in the boardList
+
+      const newArrToFindIndex = boardList.filter(
+        (item) => String(item.id) !== dragItem
+      );
+      console.log('newArrToFindIndex', newArrToFindIndex);
+      const placeholderIndexInNewArr = newArrToFindIndex.findIndex(
+        (item) => String(item.id) === placeholder.id
+      );
+      if (placeholderIndexInNewArr === -1) return;
+
+      console.log('placeholderIndexInNewArr', placeholderIndexInNewArr);
+      console.log('id', placeholder.id);
+      const firstOrLastItem =
+        placeholderIndexInNewArr === 0 && placeholder.above;
+
+      const space = `calc(${gap}${firstOrLastItem ? '' : '* 2'} + ${
+        placeholder.height
+      })`;
       if (placeholderElement) {
         if (placeholder.instant) {
           placeholderElement.style.transition = '0s';
@@ -51,10 +78,10 @@ export default function BoardList({
         }
         setTimeout(() => {
           placeholderElement.style.transition = '0.2s';
-        }, 0);
+        }, 200);
       }
     }
-  }, [placeholder, gap, boardList]);
+  }, [placeholder, gap, boardList, dragItem]);
 
   return (
     <div>
@@ -67,6 +94,7 @@ export default function BoardList({
           borderStyle: 'solid',
           borderColor: 'white',
           boxSizing: 'content-box',
+          // padding: '10px',
         }}
       >
         {boardList.map((item) => (
@@ -89,7 +117,7 @@ export default function BoardList({
                 dragElement.style.left = initialPosition.x1 + 'px';
                 dragElement.style.zIndex = '100';
                 dragElement.style.marginBottom = '0px';
-                dragElement.style.transition = '0s';
+                dragElement.style.transition = 'none';
               }
               onDragStart(e, data);
               handleDrag(e, data);
@@ -98,6 +126,8 @@ export default function BoardList({
               handleDrag(e, data);
             }}
             onStop={(e, data) => {
+              onDragStop(e, data);
+
               const { x, y } = data;
               const id = data.node.id;
               const initialPosition = itemPositions.get(id);
@@ -109,11 +139,14 @@ export default function BoardList({
                 dragElement.style.top = 'initial';
                 dragElement.style.left = 'initial';
                 dragElement.style.zIndex = 'initial';
+                dragElement.style.transitionDuration = '0.2s';
+                dragElement.style.transitionProperty = 'transform, background';
                 dragElement.style.marginBottom = gap;
-                dragElement.style.transition = '0.2s';
+                setTimeout(() => {
+                  dragElement.style.transitionProperty =
+                    'transform, background, margin';
+                }, 200);
               }
-
-              onDragStop(e, data);
             }}
           >
             <div
@@ -130,7 +163,8 @@ export default function BoardList({
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                transition: '0.2s',
+                transitionDuration: '0.2s',
+                transitionProperty: 'margin, transform, background',
               }}
             >
               <h4>{item.title}</h4>
