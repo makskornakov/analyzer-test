@@ -21,7 +21,14 @@ export interface Placeholder {
   id: string;
   height: string;
   above: boolean;
-  instant: boolean;
+  // instant: boolean;
+  cords: ItemYCords;
+}
+
+// ? Y 0 & 3 are cords of the
+interface ItemYCords {
+  y1: number;
+  y2: number;
 }
 
 function getRect(element: HTMLElement, container: HTMLElement): Position {
@@ -65,65 +72,111 @@ export default function Board() {
     null
   );
 
-  // const getAndSetItemPositions = useMemo
-  const getItemPositions = useMemo(() => {
+  const getBoardPositions = useMemo(() => {
     return () => {
-      const itemPositions = new Map();
+      const boardPositions = new Map();
       Array.from(boardContent.keys()).forEach((key) => {
-        const boardListContent = boardContent.get(key) as BoardListContent;
-        boardListContent.forEach((item) => {
-          const itemElement = document.getElementById(item.id.toString());
-          if (itemElement) {
-            const rect = getRect(
-              itemElement,
-              container.current as HTMLDivElement
-            );
-            itemPositions.set(item.id.toString(), rect);
-          }
-        });
+        const boardList = document.getElementById(key);
+        if (boardList) {
+          const rect = getRect(boardList, container.current as HTMLDivElement);
+          boardPositions.set(key, rect);
+        }
       });
-      console.log('itemPositions', itemPositions);
-      setItemPositions(itemPositions);
+      console.log('boardPositions', boardPositions);
+      setBoardPositions(boardPositions);
+      return boardPositions;
     };
   }, [boardContent]);
 
-  function findTheMostIntersectingBoardList(currentPosition: Position) {
-    let mostIntersectingBoardList: string | null = null;
-    let mostIntersectingPercentage = 0;
-    boardPositions.forEach((rect, key) => {
-      const intersectionPercentage = getIntersectionPercentage(
-        currentPosition,
-        rect
-      );
-      if (intersectionPercentage > mostIntersectingPercentage) {
-        mostIntersectingBoardList = key;
-        mostIntersectingPercentage = intersectionPercentage;
-      }
-    });
-    return mostIntersectingBoardList;
-  }
+  useEffect(() => {
+    getBoardPositions();
+  }, [getBoardPositions]);
+
+  // useEffect(() => {
+  //   const boardPositions = new Map();
+  //   Array.from(boardContent.keys()).forEach((key) => {
+  //     const boardList = document.getElementById(key);
+  //     if (boardList) {
+  //       const rect = getRect(boardList, container.current as HTMLDivElement);
+  //       boardPositions.set(key, rect);
+  //     }
+  //   });
+  //   setBoardPositions(boardPositions);
+  // }, [boardContent, draggedItem, placeholder]);
+
+  // const getAndSetItemPositions = useMemo (a function that sets item positions and returns new ItemPositions)
+  const updateItemPositions = useMemo(() => {
+    return (draggedItem?: string) => {
+      setItemPositions((prev) => {
+        const itemPositions = new Map();
+        Array.from(boardContent.keys()).forEach((key) => {
+          const boardListContent = boardContent.get(key) as BoardListContent;
+          boardListContent.forEach((item) => {
+            const itemElement = document.getElementById(item.id.toString());
+            if (itemElement) {
+              const rect =
+                draggedItem === item.id.toString()
+                  ? prev.get(item.id.toString())
+                  : getRect(itemElement, container.current as HTMLDivElement);
+              itemPositions.set(item.id.toString(), rect);
+            }
+          });
+        });
+        console.log('itemPositions', itemPositions);
+        return itemPositions;
+      });
+    };
+  }, [boardContent]);
 
   useEffect(() => {
-    const boardPositions = new Map();
-    Array.from(boardContent.keys()).forEach((key) => {
-      const boardList = document.getElementById(key);
-      if (boardList) {
-        const rect = getRect(boardList, container.current as HTMLDivElement);
-        boardPositions.set(key, rect);
-      }
-    });
-    setBoardPositions(boardPositions);
-  }, [boardContent, getItemPositions, draggedItem, placeholder]);
+    updateItemPositions();
+  }, [updateItemPositions]);
 
   useEffect(() => {
-    // if not instant, wait for the animation to finish
-    //! now set to constant 200 as it is used everywhere
+    console.log('placeholder', placeholder);
+  }, [placeholder]);
 
-    if (placeholder && !placeholder?.instant)
-      setTimeout(() => getItemPositions(), 200);
-    else getItemPositions();
-  }, [getItemPositions, placeholder, draggedItem]);
+  // function findTheMostIntersectingBoardList(currentPosition: Position) {
+  //   let mostIntersectingBoardList: string | null = null;
+  //   let mostIntersectingPercentage = 0;
+  //   boardPositions.forEach((rect, key) => {
+  //     const intersectionPercentage = getIntersectionPercentage(
+  //       currentPosition,
+  //       rect
+  //     );
+  //     if (intersectionPercentage > mostIntersectingPercentage) {
+  //       mostIntersectingBoardList = key;
+  //       mostIntersectingPercentage = intersectionPercentage;
+  //     }
+  //   });
+  //   // only intersects if inside more than 15% of tha dragged item
+  //   return mostIntersectingBoardList && mostIntersectingPercentage > 0.15
+  //     ? mostIntersectingBoardList
+  //     : null;
+  // }
 
+  const findTheMostIntersectingBoardList = useMemo(() => {
+    return (currentPosition: Position) => {
+      let mostIntersectingBoardList: string | null = null;
+      let mostIntersectingPercentage = 0;
+      boardPositions.forEach((rect, key) => {
+        const intersectionPercentage = getIntersectionPercentage(
+          currentPosition,
+          rect
+        );
+        if (intersectionPercentage > mostIntersectingPercentage) {
+          mostIntersectingBoardList = key;
+          mostIntersectingPercentage = intersectionPercentage;
+        }
+      });
+      // only intersects if inside more than 15% of tha dragged item
+      return mostIntersectingBoardList && mostIntersectingPercentage > 0.15
+        ? mostIntersectingBoardList
+        : null;
+    };
+  }, [boardPositions]);
+
+  // ?? REDO LATER
   useEffect(() => {
     Array.from(boardContent.keys()).forEach((key) => {
       const boardList = document.getElementById(key);
@@ -139,9 +192,98 @@ export default function Board() {
     }
   }, [boardListInAction, boardContent]);
 
-  function findPlaceholder(y: number) {
+  // useEffect(() => {
+  //   if (placeholder) {
+  //     // check that placeholder is in the active boardList
+  //     const activeBoardList = boardContent.get(boardListInAction as string);
+  //     if (!activeBoardList) {
+  //       setPlaceholder(null);
+  //       return;
+  //     }
+  //     const placeholderIndex = activeBoardList.findIndex(
+  //       (item) => String(item.id) === placeholder.id
+  //     );
+  //     if (placeholderIndex === -1) setPlaceholder(null);
+  //   }
+  // }, [boardContent, boardListInAction, placeholder]);
+
+  function findPlaceholder(y1: number, y2: number) {
+    const centerY = (y1 + y2) / 2;
     // the input is the center y position of the dragged item
-    //
+    // take itemPositions of the active boardList without draggable item and only use y1 and y2
+    const activeBoardList = boardContent.get(boardListInAction as string);
+    if (!activeBoardList || !draggedItem) return null;
+    const activeBoardListWithoutDraggedItem = activeBoardList.filter(
+      (item) => String(item.id) !== draggedItem
+    );
+    const responsibleIds = [];
+    if (placeholder) {
+      responsibleIds.push(placeholder.id);
+      // find the index of the placeholder
+      const placeholderIndex = activeBoardListWithoutDraggedItem.findIndex(
+        (item) => String(item.id) === placeholder.id
+      );
+      // add the id of the item before the placeholder or after if exists
+      if (placeholder.above && placeholderIndex > 0) {
+        responsibleIds.push(
+          activeBoardListWithoutDraggedItem[placeholderIndex - 1].id
+        );
+      } else if (
+        !placeholder.above &&
+        placeholderIndex < activeBoardListWithoutDraggedItem.length - 1
+      ) {
+        responsibleIds.push(
+          activeBoardListWithoutDraggedItem[placeholderIndex + 1].id
+        );
+        // now we have 1-2 ids that are near the placeholder so they are carried specially
+      }
+    }
+    // find the index of the first item in itemPositions
+    const firstItemId = activeBoardListWithoutDraggedItem[0].id;
+    const lastItemId =
+      activeBoardListWithoutDraggedItem[
+        activeBoardListWithoutDraggedItem.length - 1
+      ].id;
+
+    const firstItemPosition = itemPositions.get(firstItemId.toString());
+    const lastItemPosition = itemPositions.get(lastItemId.toString());
+
+    if (!firstItemPosition || !lastItemPosition) return null;
+
+    const maxTopItemOrPlaceholderY =
+      placeholder?.id === String(firstItemId) && placeholder.above
+        ? placeholder.cords.y1
+        : firstItemPosition.y1;
+
+    const minBottomItemOrPlaceholderY =
+      placeholder?.id === String(lastItemId) && !placeholder.above
+        ? placeholder.cords.y2
+        : lastItemPosition.y2;
+
+    console.log(placeholder?.cords);
+
+    const draggedAboveFirstItem = centerY < maxTopItemOrPlaceholderY;
+    const draggedBelowLastItem = centerY > minBottomItemOrPlaceholderY;
+
+    // checkLine is y1 if dragged above first item and y2 if dragged below last item and centerY otherwise
+    const checkYLine =
+      !draggedAboveFirstItem && !draggedBelowLastItem
+        ? centerY
+        : draggedAboveFirstItem
+        ? y2
+        : y1;
+
+    // ! tests
+    const checkLineName =
+      checkYLine === centerY
+        ? 'center'
+        : draggedAboveFirstItem
+        ? 'bottom'
+        : 'top';
+
+    console.log('checkYLine', checkLineName);
+    if (draggedAboveFirstItem) console.log('above first item');
+    if (draggedBelowLastItem) console.log('below last item');
   }
 
   function handleDrag(e: DraggableEvent, data: DraggableData) {
@@ -159,12 +301,18 @@ export default function Board() {
     const mostIntersectingBoardList =
       findTheMostIntersectingBoardList(currentPosition);
 
+    if (!mostIntersectingBoardList) setPlaceholder(null);
+
     setBoardListInAction(mostIntersectingBoardList);
+
+    findPlaceholder(currentPosition.y1, currentPosition.y2);
   }
 
-  function onDragStart(e: DraggableEvent, data: DraggableData) {
-    const id = data.node.id;
-    setDraggedItem(id);
+  function generateInitialPlaceholder(
+    id: string,
+    height: string,
+    fast?: boolean
+  ): string | undefined {
     const boardListKey = Array.from(boardContent.keys()).find((key) => {
       const boardListContent = boardContent.get(key) as BoardListContent;
       return boardListContent.find((item) => item.id.toString() === id);
@@ -180,22 +328,54 @@ export default function Board() {
       );
       if (itemIndex === 0) {
         const nextItem = boardListContent[itemIndex + 1];
+        // transition 0 for next item
+        if (fast) moveInstantly(nextItem.id.toString());
+
         setPlaceholder({
           id: nextItem.id.toString(),
-          height: data.node.style.height,
+          height: height,
           above: true,
-          instant: true,
+          // instant: true,
+          cords: {
+            y1: itemPositions.get(id)?.y1 as number,
+            y2: itemPositions.get(id)?.y2 as number,
+          },
         });
+        return nextItem.id.toString();
       } else {
         const previousItem = boardListContent[itemIndex - 1];
+        // transition 0 for previous item
+        if (fast) moveInstantly(previousItem.id.toString());
+
         setPlaceholder({
           id: previousItem.id.toString(),
-          height: data.node.style.height,
+          height: height,
           above: false,
-          instant: true,
+          // instant: true,
+          cords: {
+            y1: itemPositions.get(id)?.y1 as number,
+            y2: itemPositions.get(id)?.y2 as number,
+          },
         });
+        return previousItem.id.toString();
       }
     }
+  }
+
+  function moveInstantly(id: string) {
+    const itemElement = document.getElementById(id);
+    if (itemElement) {
+      itemElement.style.transition = '0s';
+      setTimeout(() => {
+        itemElement.style.transition = '0.2s';
+      }, 0);
+    }
+  }
+
+  function onDragStart(e: DraggableEvent, data: DraggableData) {
+    const id = data.node.id;
+    setDraggedItem(id);
+    generateInitialPlaceholder(id, data.node.style.height, true);
 
     // const nextItem = Number(id) + 1;
     // setPlaceholder({
@@ -207,10 +387,35 @@ export default function Board() {
   }
 
   function onDragStop(e: DraggableEvent, data: DraggableData) {
-    setPlaceholder(null);
-    setTimeout(() => {
-      setDraggedItem(null);
-    }, 200);
+    const id = data.node.id;
+    // const initialPosition = itemPositions.get(id);
+    // if (!initialPosition) return;
+
+    const dragElement = document.getElementById(id);
+    if (!dragElement) return;
+    dragElement.style.background = 'rgba(255, 255, 255, 0.5)';
+    dragElement.style.top = 'initial';
+    dragElement.style.left = 'initial';
+    dragElement.style.zIndex = 'initial';
+    dragElement.style.transition = '0.2s';
+
+    if (!placeholder) {
+      // generateInitialPlaceholder(id, data.node.style.height);
+      const placeID = generateInitialPlaceholder(id, data.node.style.height);
+      if (!placeID) return;
+      setTimeout(() => {
+        dragElement.style.position = 'initial';
+        moveInstantly(placeID);
+        const newPlaceholder = document.getElementById(placeID);
+        if (newPlaceholder) newPlaceholder.style.margin = '0';
+        setPlaceholder(null);
+        // setDraggedItem(null);
+      }, 200);
+    } else {
+      dragElement.style.position = 'initial';
+      moveInstantly(placeholder.id);
+      setPlaceholder(null);
+    }
   }
 
   return (
@@ -223,8 +428,8 @@ export default function Board() {
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-evenly',
-          width: '90%',
-          height: '85%',
+          width: '70%',
+          height: '70%',
           outline: '1px solid #f55500',
         }}
       >

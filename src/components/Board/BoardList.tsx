@@ -36,12 +36,12 @@ export default function BoardList({
       if (item.id.toString() === dragItem) return;
       const itemElement = document.getElementById(item.id.toString());
       if (itemElement) {
-        itemElement.style.transition = '0s';
-        itemElement.style.marginBottom = gap;
+        // itemElement.style.transition = '0s';
         itemElement.style.marginTop = '0px';
-        setTimeout(() => {
-          itemElement.style.transition = '0.2s';
-        }, 0);
+        itemElement.style.marginBottom = '0px';
+        // setTimeout(() => {
+        //   itemElement.style.transition = '0.2s';
+        // }, 0);
       }
     });
 
@@ -61,24 +61,20 @@ export default function BoardList({
 
       console.log('placeholderIndexInNewArr', placeholderIndexInNewArr);
       console.log('id', placeholder.id);
-      const firstOrLastItem =
-        placeholderIndexInNewArr === 0 && placeholder.above;
 
-      const space = `calc(${gap}${firstOrLastItem ? '' : '* 2'} + ${
-        placeholder.height
-      })`;
+      const space = `calc(${gap} + ${placeholder.height})`;
       if (placeholderElement) {
-        if (placeholder.instant) {
-          placeholderElement.style.transition = '0s';
-        }
+        // if (placeholder.instant) {
+        //   placeholderElement.style.transition = '0s';
+        // }
         if (placeholder.above) {
           placeholderElement.style.marginTop = space;
         } else {
           placeholderElement.style.marginBottom = space;
         }
-        setTimeout(() => {
-          placeholderElement.style.transition = '0.2s';
-        }, 200);
+        // setTimeout(() => {
+        //   placeholderElement.style.transition = '0.2s';
+        // }, 200);
       }
     }
   }, [placeholder, gap, boardList, dragItem]);
@@ -90,11 +86,16 @@ export default function BoardList({
         id={id}
         style={{
           width: width,
-          borderWidth: '1px',
+          borderWidth: '2px',
           borderStyle: 'solid',
-          borderColor: 'white',
+          borderColor: 'lightgray',
           boxSizing: 'content-box',
-          // padding: '10px',
+          borderRadius: '10px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          gap,
+          padding: '0.5em',
         }}
       >
         {boardList.map((item) => (
@@ -115,8 +116,7 @@ export default function BoardList({
                 dragElement.style.background = 'cyan';
                 dragElement.style.top = initialPosition.y1 + 'px';
                 dragElement.style.left = initialPosition.x1 + 'px';
-                dragElement.style.zIndex = '100';
-                dragElement.style.marginBottom = '0px';
+                dragElement.style.zIndex = '2';
                 dragElement.style.transition = 'none';
               }
               onDragStart(e, data);
@@ -129,24 +129,6 @@ export default function BoardList({
               onDragStop(e, data);
 
               const { x, y } = data;
-              const id = data.node.id;
-              const initialPosition = itemPositions.get(id);
-              if (!initialPosition) return;
-              const dragElement = document.getElementById(id);
-              if (dragElement) {
-                dragElement.style.position = 'initial';
-                dragElement.style.background = 'darkgray';
-                dragElement.style.top = 'initial';
-                dragElement.style.left = 'initial';
-                dragElement.style.zIndex = 'initial';
-                dragElement.style.transitionDuration = '0.2s';
-                dragElement.style.transitionProperty = 'transform, background';
-                dragElement.style.marginBottom = gap;
-                setTimeout(() => {
-                  dragElement.style.transitionProperty =
-                    'transform, background, margin';
-                }, 200);
-              }
             }}
           >
             <div
@@ -154,17 +136,17 @@ export default function BoardList({
               style={{
                 width: width,
                 height: itemHeight,
-                outline: '1px solid blue',
+                border: '1.5px solid white',
+                borderRadius: '10px',
                 // if not first element, add gap to marginTop
-                marginBottom: gap,
 
                 display: 'flex',
-                background: 'darkgray',
+                background: 'rgba(255, 255, 255, 0.5)',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                transitionDuration: '0.2s',
-                transitionProperty: 'margin, transform, background',
+                transition: '0.2s',
+                // transitionProperty: 'margin, transform, background',
               }}
             >
               <h4>{item.title}</h4>
