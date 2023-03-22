@@ -394,8 +394,7 @@ export default function Board() {
     const dragElement = document.getElementById(id);
     if (!dragElement) return;
     dragElement.style.background = 'rgba(255, 255, 255, 0.5)';
-    dragElement.style.top = 'initial';
-    dragElement.style.left = 'initial';
+
     dragElement.style.zIndex = 'initial';
     dragElement.style.transition = '0.2s';
 
@@ -405,6 +404,8 @@ export default function Board() {
       if (!placeID) return;
       setTimeout(() => {
         dragElement.style.position = 'initial';
+        dragElement.style.top = 'initial';
+        dragElement.style.left = 'initial';
         moveInstantly(placeID);
         const newPlaceholder = document.getElementById(placeID);
         if (newPlaceholder) newPlaceholder.style.margin = '0';
@@ -413,6 +414,8 @@ export default function Board() {
       }, 200);
     } else {
       dragElement.style.position = 'initial';
+      dragElement.style.top = 'initial';
+      dragElement.style.left = 'initial';
       moveInstantly(placeholder.id);
       setPlaceholder(null);
     }
