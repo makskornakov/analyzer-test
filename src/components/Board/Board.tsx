@@ -25,6 +25,7 @@ export interface Placeholder {
   cords: ItemYCords;
 }
 
+const listGap = '1em';
 // ? Y 0 & 3 are cords of the
 interface ItemYCords {
   y1: number;
@@ -82,7 +83,6 @@ export default function Board() {
           boardPositions.set(key, rect);
         }
       });
-      console.log('boardPositions', boardPositions);
       setBoardPositions(boardPositions);
       return boardPositions;
     };
@@ -104,25 +104,24 @@ export default function Board() {
   //   setBoardPositions(boardPositions);
   // }, [boardContent, draggedItem, placeholder]);
 
-  // const getAndSetItemPositions = useMemo (a function that sets item positions and returns new ItemPositions)
   const updateItemPositions = useMemo(() => {
     return (draggedItem?: string) => {
+      console.log('updateItemPositions function called');
       setItemPositions((prev) => {
-        const itemPositions = new Map();
+        const itemPositions = new Map(prev);
         Array.from(boardContent.keys()).forEach((key) => {
           const boardListContent = boardContent.get(key) as BoardListContent;
           boardListContent.forEach((item) => {
             const itemElement = document.getElementById(item.id.toString());
-            if (itemElement) {
-              const rect =
-                draggedItem === item.id.toString()
-                  ? prev.get(item.id.toString())
-                  : getRect(itemElement, container.current as HTMLDivElement);
+            if (itemElement && draggedItem !== item.id.toString()) {
+              const rect = getRect(
+                itemElement,
+                container.current as HTMLDivElement
+              );
               itemPositions.set(item.id.toString(), rect);
             }
           });
         });
-        console.log('itemPositions', itemPositions);
         return itemPositions;
       });
     };
@@ -136,6 +135,20 @@ export default function Board() {
     console.log('placeholder', placeholder);
   }, [placeholder]);
 
+  useEffect(() => {
+    console.log('itemPositions', itemPositions);
+  }, [itemPositions]);
+
+  useEffect(() => {
+    console.log('boardPositions', boardPositions);
+  }, [boardPositions]);
+
+  // !
+  // useEffect(() => {
+  //   updateItemPositions(draggedItem ? draggedItem : undefined);
+  // }, [draggedItem, updateItemPositions, placeholder]);
+
+  // !
   // function findTheMostIntersectingBoardList(currentPosition: Position) {
   //   let mostIntersectingBoardList: string | null = null;
   //   let mostIntersectingPercentage = 0;
@@ -302,18 +315,45 @@ export default function Board() {
       findTheMostIntersectingBoardList(currentPosition);
 
     if (!mostIntersectingBoardList && placeholder) {
-      setPlaceholder(null);
+      applyAndSetPlaceholder(null);
       setTimeout(() => {
         getBoardPositions();
       }, 200);
     }
 
     // prev !== mostIntersectingBoardList
-    setBoardListInAction((prev) =>
-      prev !== mostIntersectingBoardList ? mostIntersectingBoardList : prev
-    );
+    // setBoardListInAction((prev) =>
+    //   prev !== mostIntersectingBoardList ? mostIntersectingBoardList : prev
+    // );
+    setBoardListInAction(mostIntersectingBoardList);
 
-    findPlaceholder(currentPosition.y1, currentPosition.y2);
+    // findPlaceholder(currentPosition.y1, currentPosition.y2);
+  }
+  function applyAndSetPlaceholder(
+    placeholder: Placeholder | null,
+    instant?: boolean
+  ) {
+    // set margin of the placeholder
+    if (placeholder) {
+      const placeholderElement = document.getElementById(placeholder.id);
+      if (instant) moveInstantly(placeholder.id);
+      if (placeholderElement) {
+        if (placeholder.above) {
+          placeholderElement.style.marginTop = `calc(${placeholder.height} + ${listGap})`;
+        } else {
+          placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${listGap})`;
+        }
+      }
+    }
+
+    setPlaceholder((prev) => {
+      if (prev) {
+        const prevPlaceholderElement = document.getElementById(prev.id);
+        if (instant) moveInstantly(prev.id);
+        if (prevPlaceholderElement) prevPlaceholderElement.style.margin = '0';
+      }
+      return placeholder;
+    });
   }
 
   function generateInitialPlaceholder(
@@ -337,34 +377,62 @@ export default function Board() {
       if (itemIndex === 0) {
         const nextItem = boardListContent[itemIndex + 1];
         // transition 0 for next item
-        if (fast) moveInstantly(nextItem.id.toString());
 
-        setPlaceholder({
-          id: nextItem.id.toString(),
-          height: height,
-          above: true,
-          // instant: true,
-          cords: {
-            y1: itemPositions.get(id)?.y1 as number,
-            y2: itemPositions.get(id)?.y2 as number,
+        applyAndSetPlaceholder(
+          {
+            id: nextItem.id.toString(),
+            height: height,
+            above: true,
+            cords: {
+              y1: itemPositions.get(id)?.y1 as number,
+              y2: itemPositions.get(id)?.y2 as number,
+            },
           },
-        });
+          fast
+        );
+
+        // if (fast) moveInstantly(nextItem.id.toString());
+
+        // setPlaceholder({
+        //   id: nextItem.id.toString(),
+        //   height: height,
+        //   above: true,
+        //   // instant: true,
+        //   cords: {
+        //     y1: itemPositions.get(id)?.y1 as number,
+        //     y2: itemPositions.get(id)?.y2 as number,
+        //   },
+        // });
         return nextItem.id.toString();
       } else {
         const previousItem = boardListContent[itemIndex - 1];
         // transition 0 for previous item
-        if (fast) moveInstantly(previousItem.id.toString());
 
-        setPlaceholder({
-          id: previousItem.id.toString(),
-          height: height,
-          above: false,
-          // instant: true,
-          cords: {
-            y1: itemPositions.get(id)?.y1 as number,
-            y2: itemPositions.get(id)?.y2 as number,
+        applyAndSetPlaceholder(
+          {
+            id: previousItem.id.toString(),
+            height: height,
+            above: false,
+            cords: {
+              y1: itemPositions.get(id)?.y1 as number,
+              y2: itemPositions.get(id)?.y2 as number,
+            },
           },
-        });
+          fast
+        );
+
+        // if (fast) moveInstantly(previousItem.id.toString());
+
+        // setPlaceholder({
+        //   id: previousItem.id.toString(),
+        //   height: height,
+        //   above: false,
+        //   // instant: true,
+        //   cords: {
+        //     y1: itemPositions.get(id)?.y1 as number,
+        //     y2: itemPositions.get(id)?.y2 as number,
+        //   },
+        // });
         return previousItem.id.toString();
       }
     }
@@ -405,7 +473,6 @@ export default function Board() {
 
     dragElement.style.zIndex = 'initial';
     dragElement.style.transition = '0.2s';
-
     if (!placeholder) {
       // generateInitialPlaceholder(id, data.node.style.height);
       const placeID = generateInitialPlaceholder(id, data.node.style.height);
@@ -417,17 +484,23 @@ export default function Board() {
         moveInstantly(placeID);
         const newPlaceholder = document.getElementById(placeID);
         if (newPlaceholder) newPlaceholder.style.margin = '0';
-        setPlaceholder(null);
+
+        applyAndSetPlaceholder(null, true);
+        // setPlaceholder(null);
         getBoardPositions();
-        // setDraggedItem(null);
+        setDraggedItem(null);
       }, 200);
     } else {
       dragElement.style.position = 'initial';
       dragElement.style.top = 'initial';
       dragElement.style.left = 'initial';
-      moveInstantly(placeholder.id);
-      setPlaceholder(null);
+
+      applyAndSetPlaceholder(null, true);
+
+      // moveInstantly(placeholder.id);
+      // setPlaceholder(null);
     }
+    setBoardListInAction(null);
   }
 
   return (
@@ -451,11 +524,11 @@ export default function Board() {
             id={key}
             boardList={boardContent.get(key) as BoardListContent}
             itemPositions={itemPositions}
-            placeholder={placeholder}
+            // placeholder={placeholder}
             dragItem={draggedItem}
             width="20em"
             itemHeight="3em"
-            gap="1em"
+            gap={listGap}
             handleDrag={handleDrag}
             onDragStart={onDragStart}
             onDragStop={onDragStop}

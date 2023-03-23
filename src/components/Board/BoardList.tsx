@@ -7,7 +7,7 @@ export default function BoardList({
   id,
   boardList,
   itemPositions,
-  placeholder,
+  // placeholder,
   dragItem,
   width,
   itemHeight,
@@ -19,7 +19,7 @@ export default function BoardList({
   id: string;
   boardList: BoardListContent;
   itemPositions: Map<string, Position>;
-  placeholder: Placeholder | null;
+  // placeholder: Placeholder | null;
   dragItem: string | null;
   width: string;
   itemHeight: string;
@@ -29,55 +29,55 @@ export default function BoardList({
   onDragStop: (e: any, data: any) => void;
 }) {
   // add margin to the placeholder element
-  useEffect(() => {
-    // set initial styles to all items but skip the placeholder item and the item that is being dragged
-    boardList.forEach((item) => {
-      if (item.id.toString() === placeholder?.id) return;
-      if (item.id.toString() === dragItem) return;
-      const itemElement = document.getElementById(item.id.toString());
-      if (itemElement) {
-        // itemElement.style.transition = '0s';
-        itemElement.style.marginTop = '0px';
-        itemElement.style.marginBottom = '0px';
-        // setTimeout(() => {
-        //   itemElement.style.transition = '0.2s';
-        // }, 0);
-      }
-    });
+  // useEffect(() => {
+  //   // set initial styles to all items but skip the placeholder item and the item that is being dragged
+  //   boardList.forEach((item) => {
+  //     if (item.id.toString() === placeholder?.id) return;
+  //     if (item.id.toString() === dragItem) return;
+  //     const itemElement = document.getElementById(item.id.toString());
+  //     if (itemElement) {
+  //       // itemElement.style.transition = '0s';
+  //       itemElement.style.marginTop = '0px';
+  //       itemElement.style.marginBottom = '0px';
+  //       // setTimeout(() => {
+  //       //   itemElement.style.transition = '0.2s';
+  //       // }, 0);
+  //     }
+  //   });
 
-    if (placeholder) {
-      const placeholderElement = document.getElementById(placeholder.id);
-      // if the placeholder is going to be the first item or the last item in the list dont multiply the gap by 2
-      // find the index of the placeholder in the boardList
+  //   if (placeholder) {
+  //     const placeholderElement = document.getElementById(placeholder.id);
+  //     // if the placeholder is going to be the first item or the last item in the list dont multiply the gap by 2
+  //     // find the index of the placeholder in the boardList
 
-      const newArrToFindIndex = boardList.filter(
-        (item) => String(item.id) !== dragItem
-      );
-      console.log('newArrToFindIndex', newArrToFindIndex);
-      const placeholderIndexInNewArr = newArrToFindIndex.findIndex(
-        (item) => String(item.id) === placeholder.id
-      );
-      if (placeholderIndexInNewArr === -1) return;
+  //     const newArrToFindIndex = boardList.filter(
+  //       (item) => String(item.id) !== dragItem
+  //     );
+  //     console.log('newArrToFindIndex', newArrToFindIndex);
+  //     const placeholderIndexInNewArr = newArrToFindIndex.findIndex(
+  //       (item) => String(item.id) === placeholder.id
+  //     );
+  //     if (placeholderIndexInNewArr === -1) return;
 
-      console.log('placeholderIndexInNewArr', placeholderIndexInNewArr);
-      console.log('id', placeholder.id);
+  //     console.log('placeholderIndexInNewArr', placeholderIndexInNewArr);
+  //     console.log('id', placeholder.id);
 
-      const space = `calc(${gap} + ${placeholder.height})`;
-      if (placeholderElement) {
-        // if (placeholder.instant) {
-        //   placeholderElement.style.transition = '0s';
-        // }
-        if (placeholder.above) {
-          placeholderElement.style.marginTop = space;
-        } else {
-          placeholderElement.style.marginBottom = space;
-        }
-        // setTimeout(() => {
-        //   placeholderElement.style.transition = '0.2s';
-        // }, 200);
-      }
-    }
-  }, [placeholder, gap, boardList, dragItem]);
+  //     const space = `calc(${gap} + ${placeholder.height})`;
+  //     if (placeholderElement) {
+  //       // if (placeholder.instant) {
+  //       //   placeholderElement.style.transition = '0s';
+  //       // }
+  //       if (placeholder.above) {
+  //         placeholderElement.style.marginTop = space;
+  //       } else {
+  //         placeholderElement.style.marginBottom = space;
+  //       }
+  //       // setTimeout(() => {
+  //       //   placeholderElement.style.transition = '0.2s';
+  //       // }, 200);
+  //     }
+  //   }
+  // }, [placeholder, gap, boardList, dragItem]);
 
   return (
     <div>
@@ -95,6 +95,7 @@ export default function BoardList({
           flexDirection: 'column',
           justifyContent: 'flex-start',
           gap,
+          userSelect: 'none',
           padding: '0.5em',
         }}
       >
