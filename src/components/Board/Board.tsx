@@ -73,7 +73,7 @@ export default function Board() {
   );
 
   const getBoardPositions = useMemo(() => {
-    return () => {
+    return (placeholder?: Placeholder) => {
       const boardPositions = new Map();
       Array.from(boardContent.keys()).forEach((key) => {
         const boardList = document.getElementById(key);
@@ -301,9 +301,17 @@ export default function Board() {
     const mostIntersectingBoardList =
       findTheMostIntersectingBoardList(currentPosition);
 
-    if (!mostIntersectingBoardList) setPlaceholder(null);
+    if (!mostIntersectingBoardList && placeholder) {
+      setPlaceholder(null);
+      setTimeout(() => {
+        getBoardPositions();
+      }, 200);
+    }
 
-    setBoardListInAction(mostIntersectingBoardList);
+    // prev !== mostIntersectingBoardList
+    setBoardListInAction((prev) =>
+      prev !== mostIntersectingBoardList ? mostIntersectingBoardList : prev
+    );
 
     findPlaceholder(currentPosition.y1, currentPosition.y2);
   }
@@ -410,6 +418,7 @@ export default function Board() {
         const newPlaceholder = document.getElementById(placeID);
         if (newPlaceholder) newPlaceholder.style.margin = '0';
         setPlaceholder(null);
+        getBoardPositions();
         // setDraggedItem(null);
       }, 200);
     } else {
