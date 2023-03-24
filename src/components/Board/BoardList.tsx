@@ -121,7 +121,7 @@ export default function BoardList({
                 dragElement.style.transition = 'none';
               }
               onDragStart(e, data);
-              handleDrag(e, data);
+              // handleDrag(e, data);
             }}
             onDrag={(e, data) => {
               handleDrag(e, data);
