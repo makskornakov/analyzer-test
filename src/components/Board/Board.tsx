@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableEvent, DraggableData } from 'react-draggable';
 import BoardList from './BoardList';
 import { exampleBoardContent } from './example';
@@ -161,14 +161,17 @@ export default function Board() {
     [boardPositions]
   );
 
-  const placeholderInActiveBoardList = useCallback(() => {
-    if (!placeholder) return false;
-    const activeBoardList = boardContent.get(boardListInAction as string);
-    if (!activeBoardList) return false;
-    return activeBoardList.some(
-      (item) => item.id.toString() === placeholder.id
-    );
-  }, [boardContent, boardListInAction, placeholder]);
+  const placeholderInActiveBoardList = useCallback(
+    (placeholder: Placeholder | null, boardListInAction: string | null) => {
+      if (!placeholder) return false;
+      const activeBoardList = boardContent.get(boardListInAction as string);
+      if (!activeBoardList) return false;
+      return activeBoardList.some(
+        (item) => item.id.toString() === placeholder.id
+      );
+    },
+    [boardContent]
+  );
 
   // ?? REDO LATER
   useEffect(() => {
@@ -320,8 +323,22 @@ export default function Board() {
     [draggedItem, updateItemPositions, moveInstantly]
   );
 
+  const checkOnDrag = function (
+    currentPosition: Position,
+    placeholder: Placeholder | null,
+    itemPositions: Map<string, Position>,
+    boardList: string | null
+  ) {
+    console.log('checkOnDrag called');
+    console.log('currentPosition', currentPosition);
+    console.log('placeholder', placeholder);
+    console.log('itemPositions', itemPositions);
+    console.log('boardList', boardList);
+    console.log('------------------');
+  };
+
   const handleDrag = useCallback(
-    (e: DraggableEvent, data: DraggableData) => {
+    (e: DraggableEvent, data: DraggableData, newPlaceholder?: Placeholder) => {
       // console.log(placeholder);
       const { x, y } = data;
       const id = data.node.id;
@@ -339,14 +356,26 @@ export default function Board() {
 
       setBoardListInAction(mostIntersectingBoardList);
 
-      const isAllRight = placeholderInActiveBoardList();
-      if ((!mostIntersectingBoardList || !isAllRight) && placeholder) {
+      // const usePlaceholder = newPlaceholder || placeholder;
+      const usePlaceholder = newPlaceholder ? newPlaceholder : placeholder;
+      const isAllRight = placeholderInActiveBoardList(
+        usePlaceholder,
+        mostIntersectingBoardList
+      );
+      if ((!mostIntersectingBoardList || !isAllRight) && usePlaceholder) {
         applyAndSetPlaceholder(null);
         setTimeout(() => {
           getBoardPositions();
         }, 200);
         return;
       }
+
+      checkOnDrag(
+        currentPosition,
+        usePlaceholder,
+        itemPositions,
+        mostIntersectingBoardList
+      );
 
       // findPlaceholder(
       //   currentPosition.y1,
@@ -423,8 +452,9 @@ export default function Board() {
   function onDragStart(e: DraggableEvent, data: DraggableData) {
     const id = data.node.id;
     setDraggedItem(id);
-    generateInitialPlaceholder(id, data.node.style.height, true);
-    handleDrag(e, data);
+    const place = generateInitialPlaceholder(id, data.node.style.height, true);
+    console.log(place);
+    handleDrag(e, data, place);
   }
 
   function onDragStop(e: DraggableEvent, data: DraggableData) {
