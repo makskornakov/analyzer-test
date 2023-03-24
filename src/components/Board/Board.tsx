@@ -294,7 +294,14 @@ export default function Board() {
   }
 
   const applyAndSetPlaceholder = useCallback(
-    (placeholder: Placeholder | null, instant?: boolean) => {
+    (
+      placeholder: Placeholder | null,
+      instant?: boolean,
+      newDraggedItem?: string
+    ) => {
+      const useDraggedItem = newDraggedItem || draggedItem;
+      console.log('applyAndSetPlaceholder called');
+      console.log('draggedItem', useDraggedItem);
       // set margin of the placeholder
       if (placeholder) {
         const placeholderElement = document.getElementById(placeholder.id);
@@ -314,7 +321,7 @@ export default function Board() {
           if (instant) moveInstantly(prev.id);
           if (prevPlaceholderElement) prevPlaceholderElement.style.margin = '0';
           setTimeout(() => {
-            updateItemPositions(draggedItem ? draggedItem : undefined);
+            updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
           }, 200);
         }
         return placeholder;
@@ -324,22 +331,30 @@ export default function Board() {
   );
 
   const checkOnDrag = function (
+    draggedItem: string,
     currentPosition: Position,
+    boardList: string | null,
     placeholder: Placeholder | null,
-    itemPositions: Map<string, Position>,
-    boardList: string | null
+    itemPositions: Map<string, Position>
   ) {
     console.log('checkOnDrag called');
-    console.log('currentPosition', currentPosition);
-    console.log('placeholder', placeholder);
-    console.log('itemPositions', itemPositions);
-    console.log('boardList', boardList);
-    console.log('------------------');
+    // console.log('currentPosition', currentPosition);
+    // console.log('placeholder', placeholder);
+    // console.log('itemPositions', itemPositions);
+    // console.log('boardList', boardList);
+    // console.log('------------------');
+
+    // ? TO DO
+    // * Create Y map of items in active boardList in format {y0, y1, y2, y3} where y0 and y3 are the top and bottom possible margins of the item if it has placeholder above or below
+
+    // * take current Y center and check if its between y0 min and y1 max of the item map
+    // * if its higher than useLine = bottom of the item
+    // * if its lower than useLine = top of the item
+    // * if its between useLine = center of the item
   };
 
   const handleDrag = useCallback(
     (e: DraggableEvent, data: DraggableData, newPlaceholder?: Placeholder) => {
-      // console.log(placeholder);
       const { x, y } = data;
       const id = data.node.id;
       const initialPosition = itemPositions.get(id);
@@ -356,8 +371,7 @@ export default function Board() {
 
       setBoardListInAction(mostIntersectingBoardList);
 
-      // const usePlaceholder = newPlaceholder || placeholder;
-      const usePlaceholder = newPlaceholder ? newPlaceholder : placeholder;
+      const usePlaceholder = newPlaceholder || placeholder;
       const isAllRight = placeholderInActiveBoardList(
         usePlaceholder,
         mostIntersectingBoardList
@@ -370,11 +384,14 @@ export default function Board() {
         return;
       }
 
+      // ? state is old but usePlaceholder is new
+      // console.log('placeholder STATE', placeholder);
       checkOnDrag(
+        id,
         currentPosition,
+        mostIntersectingBoardList,
         usePlaceholder,
-        itemPositions,
-        mostIntersectingBoardList
+        itemPositions
       );
 
       // findPlaceholder(
@@ -412,40 +429,23 @@ export default function Board() {
       const itemIndex = boardListContent.findIndex(
         (item) => item.id.toString() === id
       );
-      if (itemIndex === 0) {
-        const nextItem = boardListContent[itemIndex + 1];
-        // transition 0 for next item
 
-        const placeholderObject = {
-          id: nextItem.id.toString(),
-          height: height,
-          above: true,
-          cords: {
-            y1: itemPositions.get(id)?.y1 as number,
-            y2: itemPositions.get(id)?.y2 as number,
-          },
-        };
-        applyAndSetPlaceholder(placeholderObject, fast);
+      const isFirstChild = itemIndex === 0;
+      const targetItem = boardListContent[itemIndex + (isFirstChild ? 1 : -1)];
+      const targetItemPosition = itemPositions.get(targetItem.id.toString());
+      if (!targetItemPosition) return undefined;
 
-        return placeholderObject;
-      } else {
-        const previousItem = boardListContent[itemIndex - 1];
-        // transition 0 for previous item (now set at the ApplyAndSetPlaceholder)
-
-        const placeholderObject = {
-          id: previousItem.id.toString(),
-          height: height,
-          above: false,
-          cords: {
-            y1: itemPositions.get(id)?.y1 as number,
-            y2: itemPositions.get(id)?.y2 as number,
-          },
-        };
-
-        applyAndSetPlaceholder(placeholderObject, fast);
-
-        return placeholderObject;
-      }
+      const placeholderObject = {
+        id: targetItem.id.toString(),
+        height: height,
+        above: isFirstChild,
+        cords: {
+          y1: targetItemPosition.y1,
+          y2: targetItemPosition.y2,
+        },
+      };
+      applyAndSetPlaceholder(placeholderObject, fast, id);
+      return placeholderObject;
     }
   }
 
@@ -453,7 +453,6 @@ export default function Board() {
     const id = data.node.id;
     setDraggedItem(id);
     const place = generateInitialPlaceholder(id, data.node.style.height, true);
-    console.log(place);
     handleDrag(e, data, place);
   }
 
