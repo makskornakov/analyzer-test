@@ -43,12 +43,13 @@ function getRect(element: HTMLElement, container: HTMLElement): Position {
   };
 }
 
-function getIntersectionPercentage(rect: Position, checkableRect: Position) {
+function getIntersectionPercentage(rect: Position, refRect: Position) {
   // return the percentage of rect that is inside checkableRect
-  const x1 = Math.max(rect.x1, checkableRect.x1);
-  const y1 = Math.max(rect.y1, checkableRect.y1);
-  const x2 = Math.min(rect.x2, checkableRect.x2);
-  const y2 = Math.min(rect.y2, checkableRect.y2);
+  // ? refRect is for ex. the boardList
+  const x1 = Math.max(rect.x1, refRect.x1);
+  const y1 = Math.max(rect.y1, refRect.y1);
+  const x2 = Math.min(rect.x2, refRect.x2);
+  const y2 = Math.min(rect.y2, refRect.y2);
   const intersectionArea = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
   const rectArea = (rect.x2 - rect.x1) * (rect.y2 - rect.y1);
   return intersectionArea / rectArea;
@@ -330,28 +331,105 @@ export default function Board() {
     [draggedItem, updateItemPositions, moveInstantly]
   );
 
-  const checkOnDrag = function (
-    draggedItem: string,
-    currentPosition: Position,
-    boardList: string | null,
-    placeholder: Placeholder | null,
-    itemPositions: Map<string, Position>
-  ) {
-    console.log('checkOnDrag called');
-    // console.log('currentPosition', currentPosition);
-    // console.log('placeholder', placeholder);
-    // console.log('itemPositions', itemPositions);
-    // console.log('boardList', boardList);
-    // console.log('------------------');
+  interface YPosWithPlaceholder {
+    y0?: number;
+    y1: number;
+    y2: number;
+    y3?: number;
+  }
 
-    // ? TO DO
-    // * Create Y map of items in active boardList in format {y0, y1, y2, y3} where y0 and y3 are the top and bottom possible margins of the item if it has placeholder above or below
+  const checkOnDrag = useCallback(
+    (
+      draggedItem: string,
+      currentPosition: Position,
+      boardList: string | null,
+      placeholder: Placeholder | null,
+      itemPositions: Map<string, Position>
+    ) => {
+      console.log('checkOnDrag called');
+      // console.log('currentPosition', currentPosition);
+      // console.log('placeholder', placeholder);
+      // console.log('itemPositions', itemPositions);
+      // console.log('boardList', boardList);
+      // console.log('------------------');
 
-    // * take current Y center and check if its between y0 min and y1 max of the item map
-    // * if its higher than useLine = bottom of the item
-    // * if its lower than useLine = top of the item
-    // * if its between useLine = center of the item
-  };
+      // ? TO DO
+      // * Create Y map of items in active boardList in format {y0, y1, y2, y3} where y0 and y3 are the top and bottom possible margins of the item if it has placeholder above or below
+
+      // * take current Y center and check if its between y0 min and y1 max of the item map
+      // * if its higher than useLine = bottom of the item
+      // * if its lower than useLine = top of the item
+      // * if its between useLine = center of the item
+
+      if (!boardList) return;
+      const theYMap: Map<string, YPosWithPlaceholder> = new Map();
+
+      // console.log('activeBoardListItemPositions', itemPositions);
+
+      itemPositions.forEach((itemPosition, itemId) => {
+        const { y1, y2 } = itemPosition;
+        const resObj: YPosWithPlaceholder = { y1, y2 };
+        // if placeholder id is the same as the item id then we need to check if the placeholder is above or below the item
+        if (placeholder?.id === itemId) {
+          if (placeholder.above) {
+            resObj.y0 = placeholder.cords.y1;
+          } else {
+            resObj.y3 = placeholder.cords.y2;
+          }
+        }
+        theYMap.set(itemId, resObj);
+      });
+      // console.log('theYMap', theYMap);
+
+      // * check if the current Y center is between y0 min and y1 max of the item map
+      const { y1, y2 } = currentPosition;
+      const centerY = (y1 + y2) / 2;
+
+      const topY = Math.min(
+        ...Array.from(theYMap.values()).map((v) => v.y0 || v.y1)
+      );
+      const bottomY = Math.max(
+        ...Array.from(theYMap.values()).map((v) => v.y3 || v.y2)
+      );
+
+      // console.log('topY', topY);
+      // console.log('bottomY', bottomY);
+
+      const useLine = centerY < topY ? y2 : centerY > bottomY ? y1 : centerY;
+      const useLineName =
+        useLine === y1 ? 'top' : useLine === y2 ? 'bottom' : 'center';
+      console.log('useLine', useLineName);
+
+      // ? test for rerendering
+      // setBoardContent((prev) => {
+      //   // swap the first and last items in tge first list
+      //   const newBoardContent = new Map(prev);
+      //   const activeBoardList = newBoardContent.get(boardList);
+      //   if (!activeBoardList) return prev;
+      //   // swap the first and last items in tge first list
+      //   const newActiveBoardList = [...activeBoardList];
+      //   const firstItem = newActiveBoardList[0];
+      //   const lastItem = newActiveBoardList[newActiveBoardList.length - 1];
+      //   newActiveBoardList[0] = lastItem;
+      //   newActiveBoardList[newActiveBoardList.length - 1] = firstItem;
+
+      //   newBoardContent.set(boardList, newActiveBoardList);
+
+      //   return newBoardContent;
+      // });
+    },
+    []
+  );
+
+  // const checkOnDrag = function (
+  //   draggedItem: string,
+  //   currentPosition: Position,
+  //   boardList: string | null,
+  //   placeholder: Placeholder | null,
+  //   itemPositions: Map<string, Position>
+  // ) {
+
+  // };
 
   const handleDrag = useCallback(
     (e: DraggableEvent, data: DraggableData, newPlaceholder?: Placeholder) => {
@@ -386,12 +464,23 @@ export default function Board() {
 
       // ? state is old but usePlaceholder is new
       // console.log('placeholder STATE', placeholder);
+      if (!mostIntersectingBoardList) return;
+      const boardListItems = boardContent.get(mostIntersectingBoardList);
+      if (!boardListItems) return;
+
+      const activeBoardListItemPositions = new Map(
+        Array.from(itemPositions).filter(
+          ([theId]) =>
+            boardListItems.some((item) => `${item.id}` === theId) &&
+            theId !== id
+        )
+      );
       checkOnDrag(
         id,
         currentPosition,
         mostIntersectingBoardList,
         usePlaceholder,
-        itemPositions
+        activeBoardListItemPositions
       );
 
       // findPlaceholder(
@@ -402,10 +491,12 @@ export default function Board() {
       // );
     },
     [
-      placeholder,
       itemPositions,
       findTheMostIntersectingBoardList,
+      placeholder,
       placeholderInActiveBoardList,
+      boardContent,
+      checkOnDrag,
       applyAndSetPlaceholder,
       getBoardPositions,
     ]
@@ -433,15 +524,16 @@ export default function Board() {
       const isFirstChild = itemIndex === 0;
       const targetItem = boardListContent[itemIndex + (isFirstChild ? 1 : -1)];
       const targetItemPosition = itemPositions.get(targetItem.id.toString());
-      if (!targetItemPosition) return undefined;
+      const draggedItemPosition = itemPositions.get(id);
+      if (!targetItemPosition || !draggedItemPosition) return;
 
       const placeholderObject = {
         id: targetItem.id.toString(),
         height: height,
         above: isFirstChild,
         cords: {
-          y1: targetItemPosition.y1,
-          y2: targetItemPosition.y2,
+          y1: draggedItemPosition.y1,
+          y2: draggedItemPosition.y2,
         },
       };
       applyAndSetPlaceholder(placeholderObject, fast, id);
