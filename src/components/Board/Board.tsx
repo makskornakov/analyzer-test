@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableEvent, DraggableData } from 'react-draggable';
+import type { CSSProperties } from 'styled-components';
 import BoardList from './BoardList';
-import { exampleBoardContent } from './example';
 
 export interface BoardItem {
   id: number;
@@ -25,7 +25,6 @@ export interface Placeholder {
   cords: ItemYCords;
 }
 
-const listGap = '1em';
 const sensitivityPixels = 10;
 // ? Y 0 & 3 are cords of the
 interface ItemYCords {
@@ -55,11 +54,34 @@ function getIntersectionPercentage(rect: Position, refRect: Position) {
   const rectArea = (rect.x2 - rect.x1) * (rect.y2 - rect.y1);
   return intersectionArea / rectArea;
 }
+interface BoardProps {
+  initialBoardContent: BoardContent;
+  listWidth: string;
+  itemHeight: string;
+  itemGap: string;
+  listPadding?: string;
+  itemStyle?: React.CSSProperties;
+  listStyle?: React.CSSProperties;
+  itemActiveStyle?: React.CSSProperties;
+  listActiveStyle?: React.CSSProperties;
+  transitionDuration?: number;
+}
 
-export default function Board() {
+export default function Board({
+  initialBoardContent,
+  listWidth,
+  itemHeight,
+  itemGap,
+  listPadding = '0px',
+  itemStyle,
+  listStyle,
+  itemActiveStyle,
+  listActiveStyle,
+  transitionDuration = 200,
+}: BoardProps) {
   const container = useRef<HTMLDivElement>(null);
   const [boardContent, setBoardContent] =
-    useState<BoardContent>(exampleBoardContent);
+    useState<BoardContent>(initialBoardContent);
 
   const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(
     new Map()
@@ -180,8 +202,14 @@ export default function Board() {
     Array.from(boardContent.keys()).forEach((key) => {
       const boardList = document.getElementById(key);
       if (boardList) {
-        boardList.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-        boardList.style.padding = '0.5em';
+        if (listActiveStyle)
+          Object.keys(listActiveStyle).forEach((key) => {
+            const value = listStyle
+              ? listStyle[key as keyof CSSProperties]
+              : '';
+            boardList.style.setProperty(key, value ? (value as string) : '');
+          });
+        boardList.style.padding = listPadding;
       }
     });
     if (boardListInAction) {
@@ -193,31 +221,45 @@ export default function Board() {
         const cleanActiveList = activeList?.filter(
           (item) => item.id.toString() !== draggedItem
         );
+        //! if empty board list and no placeholder generate general placeholder
         if (cleanActiveList?.length < 1) {
           const draggedItemElement = document.getElementById(
             draggedItem as string
           );
           if (boardList) {
-            boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + 0.5em)`;
+            boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + ${listPadding})`;
           }
         }
       }
-      if (boardList) {
-        boardList.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+      if (boardList && listActiveStyle) {
+        Object.keys(listActiveStyle).forEach((key) => {
+          const value = listActiveStyle[key as keyof CSSProperties];
+          boardList.style.setProperty(key, value as string);
+        });
       }
     }
-  }, [boardListInAction, boardContent, draggedItem]);
+  }, [
+    boardListInAction,
+    boardContent,
+    draggedItem,
+    listPadding,
+    listActiveStyle,
+    listStyle,
+  ]);
 
-  const moveInstantly = useCallback((id: string) => {
-    console.log('moveInstantly called');
-    const itemElement = document.getElementById(id);
-    if (itemElement) {
-      itemElement.style.transition = '0s';
-      setTimeout(() => {
-        itemElement.style.transition = '0.2s';
-      }, 0);
-    }
-  }, []);
+  const moveInstantly = useCallback(
+    (id: string) => {
+      console.log('moveInstantly called');
+      const itemElement = document.getElementById(id);
+      if (itemElement) {
+        itemElement.style.transition = '0s';
+        setTimeout(() => {
+          itemElement.style.transition = `${transitionDuration / 1000}s`;
+        }, 0);
+      }
+    },
+    [transitionDuration]
+  );
 
   const applyAndSetPlaceholder = useCallback(
     (
@@ -230,15 +272,14 @@ export default function Board() {
       console.log('draggedItem', useDraggedItem);
       // set margin of the placeholder
       setPlaceholder((prev) => {
-        // setItemInTransition(placeholder?.id || null);
         if (placeholder) {
           const placeholderElement = document.getElementById(placeholder.id);
           if (instant) moveInstantly(placeholder.id);
           if (placeholderElement) {
             if (placeholder.above) {
-              placeholderElement.style.marginTop = `calc(${placeholder.height} + ${listGap})`;
+              placeholderElement.style.marginTop = `calc(${placeholder.height} + ${itemGap})`;
             } else {
-              placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${listGap})`;
+              placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${itemGap})`;
             }
           }
         }
@@ -250,11 +291,18 @@ export default function Board() {
         setTimeout(() => {
           updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
           getBoardPositions();
-        }, 200);
+        }, transitionDuration);
         return placeholder;
       });
     },
-    [draggedItem, moveInstantly, updateItemPositions, getBoardPositions]
+    [
+      draggedItem,
+      transitionDuration,
+      moveInstantly,
+      itemGap,
+      updateItemPositions,
+      getBoardPositions,
+    ]
   );
 
   interface YPosWithPlaceholder {
@@ -351,9 +399,9 @@ export default function Board() {
     if (itemInTransition) {
       setTimeout(() => {
         setItemInTransition(null);
-      }, 200);
+      }, transitionDuration);
     }
-  }, [itemInTransition]);
+  }, [itemInTransition, transitionDuration]);
 
   const checkOnDrag = useCallback(
     (
@@ -469,15 +517,11 @@ export default function Board() {
             height: placeholderElement.style.height,
             cords: itemYPos,
           };
-          // if (
-          //   placeholder?.above === setPlaceholderAbove &&
-          //   placeholder.id === itemId
-          // )
-          //   return;
-          // applyAndSetPlaceholder(null);
+
           setItemInTransition(itemId);
           set = true;
           applyAndSetPlaceholder(placeholderObj);
+          // ? so it doesn't check the rest of the items
           return false;
         } else if (
           (itemId === placeholder?.id ||
@@ -496,7 +540,7 @@ export default function Board() {
             'timeToChangePlaceholderSide',
             timeToChangePlaceholderSide
           );
-          console.log('itemInTransition', itemInTransition);
+          // console.log('itemInTransition', itemInTransition);
           // change placeholders side
           if (timeToChangePlaceholderSide) {
             const placeholderObj: Placeholder = {
@@ -509,11 +553,9 @@ export default function Board() {
             set = true;
             applyAndSetPlaceholder(null);
             applyAndSetPlaceholder(placeholderObj);
+            // ? so it doesn't check the rest of the items
             return false;
           }
-          // updateItemPositions(draggedItem);
-
-          //
         }
       });
       console.log('closestEdge', closestEdge);
@@ -538,20 +580,9 @@ export default function Board() {
             closestEdge.id
           }`
         );
-        // applyAndSetPlaceholder(null);
         setItemInTransition(closestEdge.id);
         applyAndSetPlaceholder(placeholderObj);
       }
-
-      //! if empty board list and no placeholder generate general placeholder
-      // if (!placeholder && !Array.from(theYMap.keys()).length) {
-      //   const boardListContainer = document.getElementById(boardList);
-      //   if (!boardListContainer) return;
-      //   const draggedElement = document.getElementById(draggedItem);
-      //   if (!draggedElement) return;
-      //   // add margin top to the container
-      //   boardListContainer.style.height = `calc(${draggedElement.style.height} + ${listGap})`;
-      // }
     },
     [applyAndSetPlaceholder, itemInTransition]
   );
@@ -572,8 +603,6 @@ export default function Board() {
       const mostIntersectingBoardList =
         findTheMostIntersectingBoardList(currentPosition);
 
-      if (mostIntersectingBoardList) moveInstantly(mostIntersectingBoardList);
-
       setBoardListInAction(mostIntersectingBoardList);
 
       const usePlaceholder = newPlaceholder || placeholder;
@@ -585,7 +614,7 @@ export default function Board() {
         applyAndSetPlaceholder(null);
         setTimeout(() => {
           getBoardPositions();
-        }, 200);
+        }, transitionDuration);
         return;
       }
 
@@ -602,6 +631,9 @@ export default function Board() {
             theId !== id
         )
       );
+      if (activeBoardListItemPositions.size < 1)
+        moveInstantly(mostIntersectingBoardList);
+
       checkOnDrag(
         id,
         currentPosition,
@@ -609,13 +641,6 @@ export default function Board() {
         usePlaceholder,
         activeBoardListItemPositions
       );
-
-      // findPlaceholder(
-      //   currentPosition.y1,
-      //   currentPosition.y2,
-      //   mostIntersectingBoardList,
-      //   placeholder
-      // );
     },
     [
       itemPositions,
@@ -626,6 +651,7 @@ export default function Board() {
       boardContent,
       checkOnDrag,
       applyAndSetPlaceholder,
+      transitionDuration,
       getBoardPositions,
     ]
   );
@@ -679,15 +705,12 @@ export default function Board() {
 
   function onDragStop(e: DraggableEvent, data: DraggableData) {
     const id = data.node.id;
-    // const initialPosition = itemPositions.get(id);
-    // if (!initialPosition) return;
 
     const dragElement = document.getElementById(id);
     if (!dragElement) return;
-    dragElement.style.background = 'rgba(255, 255, 255, 0.5)';
 
     dragElement.style.zIndex = 'initial';
-    dragElement.style.transition = '0.2s';
+    dragElement.style.transition = `${transitionDuration / 1000}s`;
 
     const boardListKey = Array.from(boardContent.keys()).find((key) => {
       const boardListContent = boardContent.get(key) as BoardListContent;
@@ -695,10 +718,7 @@ export default function Board() {
     });
 
     if (!placeholder && !boardListInAction) {
-      // generateInitialPlaceholder(id, data.node.style.height);
       const placeID = generateInitialPlaceholder(id, data.node.style.height);
-      // if (!placeID) return;
-      // dragElement.style.position = 'initial';
 
       const neededList = boardContent.get(boardListKey as string);
       const filteredList = neededList?.filter(
@@ -706,16 +726,15 @@ export default function Board() {
       );
       if (filteredList?.length === 0)
         setBoardListInAction(boardListKey as string);
+
       setTimeout(() => {
-        // moveInstantly(id);
         dragElement.style.position = 'initial';
-        // dragElement.style.top = 'initial';
-        // dragElement.style.left = 'initial';
+
         const boardListElement = document.getElementById(
           boardListKey as string
         );
         moveInstantly(boardListKey as string);
-        if (boardListElement) boardListElement.style.padding = '0.5em';
+        if (boardListElement) boardListElement.style.padding = listPadding;
         // ? IF the code below is commented out the placeholder will lag on fast drag out and drag stop
 
         if (placeID) {
@@ -724,11 +743,14 @@ export default function Board() {
           if (newPlaceholder) newPlaceholder.style.margin = '0';
         }
         applyAndSetPlaceholder(null, true);
-        // setPlaceholder(null);
+
         getBoardPositions();
-        setDraggedItem(null);
-        setBoardListInAction(null);
-      }, 200);
+
+        setBoardListInAction((prev) => {
+          if (prev === boardListKey) return null;
+          return prev;
+        });
+      }, transitionDuration);
     } else if (!placeholder && boardListInAction !== boardListKey) {
       console.log('time to move to empty list');
       // just delete the dragged item from the old list and add it to the new list
@@ -754,7 +776,7 @@ export default function Board() {
         boardListInAction as string
       );
       moveInstantly(boardListInAction as string);
-      if (boardListElement) boardListElement.style.padding = '0.5em';
+      if (boardListElement) boardListElement.style.padding = listPadding;
 
       dragElement.style.position = 'initial';
 
@@ -765,22 +787,14 @@ export default function Board() {
         return newBoardContent;
       });
 
-      setDraggedItem(null);
+      // setDraggedItem(null);
       setBoardListInAction(null);
     } else if (placeholder) {
-      // if (placeHolderElement) {
-
-      //   placeHolderElement.style.marginTop = '0';
-      //   placeHolderElement.style.marginBottom = '0';
-      // }
+      // ? If placeholder is not null and the board list in action is the same as placeholders list
+      dragElement.style.position = 'initial';
 
       applyAndSetPlaceholder(null, true);
-      dragElement.style.position = 'initial';
-      setDraggedItem(null);
-      setBoardListInAction((prev) => {
-        if (prev) moveInstantly(prev);
-        return null;
-      });
+      setBoardListInAction(null);
       const theList = boardContent.get(boardListInAction as string);
       if (!theList) return;
       const placeholderIndex = theList.findIndex(
@@ -801,11 +815,9 @@ export default function Board() {
         console.log('no need to update');
         return;
       }
+      // ? Only instant if there is change in the list
       moveInstantly(id);
-      // dragElement.style.top = 'initial';
-      // dragElement.style.left = 'initial';
-      // updateItemPositions();
-      // moveInstantly(boardListInAction as string);
+
       updateBoardOrder(
         id,
         placeholder as Placeholder,
@@ -813,12 +825,15 @@ export default function Board() {
       );
     } else {
       dragElement.style.position = 'initial';
-      setDraggedItem(null);
+      // ? has to be instant to prevent the placeholder from lagging on click and stop
       setBoardListInAction((prev) => {
         if (prev) moveInstantly(prev);
         return null;
       });
     }
+    setTimeout(() => {
+      setDraggedItem(null);
+    }, transitionDuration);
   }
 
   return (
@@ -843,10 +858,15 @@ export default function Board() {
             boardList={boardContent.get(key) as BoardListContent}
             itemPositions={itemPositions}
             // placeholder={placeholder}
-            dragItem={draggedItem}
-            width="20em"
-            itemHeight="3em"
-            gap={listGap}
+            // dragItem={draggedItem}
+            width={listWidth}
+            itemHeight={itemHeight}
+            gap={itemGap}
+            itemStyle={itemStyle}
+            listStyle={listStyle}
+            itemActiveStyle={itemActiveStyle}
+            listPadding={listPadding}
+            transitionDuration={transitionDuration}
             handleDrag={handleDrag}
             onDragStart={onDragStart}
             onDragStop={onDragStop}

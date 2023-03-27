@@ -1,33 +1,44 @@
 import { BoardListContent, Position } from './Board';
-import type { Placeholder } from './Board';
 import Draggable from 'react-draggable';
-import { useEffect } from 'react';
+import type { CSSProperties } from 'styled-components';
+
+interface BoardListProps {
+  id: string;
+  boardList: BoardListContent;
+  itemPositions: Map<string, Position>;
+  // placeholder: Placeholder | null;
+  // dragItem: string | null;
+  width: string;
+  itemHeight: string;
+  gap: string;
+  listPadding: string;
+  transitionDuration: number;
+  itemStyle?: React.CSSProperties;
+  listStyle?: React.CSSProperties;
+  itemActiveStyle?: React.CSSProperties;
+  handleDrag: (e: any, data: any) => void;
+  onDragStart: (e: any, data: any) => void;
+  onDragStop: (e: any, data: any) => void;
+}
 
 export default function BoardList({
   id,
   boardList,
   itemPositions,
   // placeholder,
-  dragItem,
+  // dragItem,
   width,
   itemHeight,
   gap,
+  itemStyle,
+  listStyle,
+  itemActiveStyle,
+  listPadding,
+  transitionDuration,
   handleDrag,
   onDragStart,
   onDragStop,
-}: {
-  id: string;
-  boardList: BoardListContent;
-  itemPositions: Map<string, Position>;
-  // placeholder: Placeholder | null;
-  dragItem: string | null;
-  width: string;
-  itemHeight: string;
-  gap: string;
-  handleDrag: (e: any, data: any) => void;
-  onDragStart: (e: any, data: any) => void;
-  onDragStop: (e: any, data: any) => void;
-}) {
+}: BoardListProps) {
   // add margin to the placeholder element
   // useEffect(() => {
   //   // set initial styles to all items but skip the placeholder item and the item that is being dragged
@@ -86,19 +97,20 @@ export default function BoardList({
         id={id}
         style={{
           width: width,
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          borderColor: 'lightgray',
+          // borderWidth: '2px',
+          // borderStyle: 'solid',
+          // borderColor: 'lightgray',
           boxSizing: 'content-box',
-          borderRadius: '10px',
+          // borderRadius: '10px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
+          // userSelect: 'none',
           gap,
-          userSelect: 'none',
-          padding: '0.5em',
-          transition: '0.2s',
-          transitionProperty: 'padding',
+          padding: listPadding,
+          transition: `${transitionDuration / 1000}s`,
+
+          ...listStyle,
         }}
       >
         {boardList.map((item) => (
@@ -115,11 +127,20 @@ export default function BoardList({
               if (!initialPosition) return;
               const dragElement = document.getElementById(id);
               if (dragElement) {
+                // active styles
+                // go through all active styles and apply them to the dragElement
+
+                if (itemActiveStyle)
+                  Object.keys(itemActiveStyle).forEach((key) => {
+                    const value = itemActiveStyle[key as keyof CSSProperties];
+                    dragElement.style.setProperty(key, value as string);
+                  });
+
                 dragElement.style.position = 'absolute';
-                dragElement.style.background = 'cyan';
                 dragElement.style.top = initialPosition.y1 + 'px';
                 dragElement.style.left = initialPosition.x1 + 'px';
                 dragElement.style.zIndex = '2';
+                // dragElement.style.cursor = 'grabbing';
                 dragElement.style.transition = 'none';
               }
               onDragStart(e, data);
@@ -127,9 +148,26 @@ export default function BoardList({
             }}
             onDrag={(e, data) => {
               handleDrag(e, data);
+              // const parent = document.getElementById(id);
+              // if (!parent) return;
+              // parent.style.cursor = 'grabbing';
             }}
             onStop={(e, data) => {
               onDragStop(e, data);
+              const id = data.node.id;
+              const dragElement = document.getElementById(id);
+
+              // remove active styles
+              if (itemActiveStyle && dragElement)
+                Object.keys(itemActiveStyle).forEach((key) => {
+                  const value = itemStyle
+                    ? itemStyle[key as keyof CSSProperties]
+                    : '';
+                  dragElement.style.setProperty(
+                    key,
+                    value ? (value as string) : ''
+                  );
+                });
 
               const { x, y } = data;
             }}
@@ -139,17 +177,13 @@ export default function BoardList({
               style={{
                 width: width,
                 height: itemHeight,
-                border: '1.5px solid white',
-                borderRadius: '10px',
-                // if not first element, add gap to marginTop
 
-                display: 'flex',
-                background: 'rgba(255, 255, 255, 0.5)',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                transition: '0.2s',
-                // transitionProperty: 'margin, transform, background',
+                userSelect: 'none',
+                cursor: 'grab',
+
+                transition: `${transitionDuration / 1000}s`,
+
+                ...itemStyle,
               }}
             >
               <h4>{item.title}</h4>

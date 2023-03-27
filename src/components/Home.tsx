@@ -7,6 +7,7 @@ import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board from './Board/Board';
+import { exampleBoardContent } from './Board/example';
 
 interface UploadedFile {
   data: Object[];
@@ -82,7 +83,33 @@ export default function HomeWrapper({
       </InnerWrapper>
       {/* <InnerWrapper> */}
       <InnerWrapper ref={SettingSection}>
-        <Board />
+        <Board
+          initialBoardContent={exampleBoardContent}
+          listWidth={'250px'}
+          itemHeight={'3em'}
+          itemGap={'1em'}
+          listPadding={'1em'}
+          // transitionDuration={400}
+          itemStyle={{
+            borderRadius: '0.5em',
+            // border: '2px solid grey',
+            background: '#252525',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          listStyle={{
+            borderRadius: '0.5em',
+            border: '1.5px solid grey',
+          }}
+          itemActiveStyle={{
+            background: '#f55500',
+          }}
+          listActiveStyle={{
+            background: 'rgba(104, 61, 173, 0.15)',
+            border: '1.5px solid #a5a5a5',
+          }}
+        />
       </InnerWrapper>
       <InnerWrapper>
         <h2>Clusters on the Canvas</h2>

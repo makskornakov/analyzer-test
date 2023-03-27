@@ -25,4 +25,5 @@ export const exampleBoardContent: BoardContent = new Map([
       // { id: 14, title: 'title14', content: 'content14' },
     ],
   ],
+  ['board3', [{ id: 15, title: 'title15', content: 'content15' }]],
 ]);
