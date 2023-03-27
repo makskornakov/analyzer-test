@@ -26,6 +26,7 @@ export interface Placeholder {
 }
 
 const listGap = '1em';
+const sensitivityPixels = 10;
 // ? Y 0 & 3 are cords of the
 interface ItemYCords {
   y1: number;
@@ -304,31 +305,32 @@ export default function Board() {
       console.log('applyAndSetPlaceholder called');
       console.log('draggedItem', useDraggedItem);
       // set margin of the placeholder
-      if (placeholder) {
-        const placeholderElement = document.getElementById(placeholder.id);
-        if (instant) moveInstantly(placeholder.id);
-        if (placeholderElement) {
-          if (placeholder.above) {
-            placeholderElement.style.marginTop = `calc(${placeholder.height} + ${listGap})`;
-          } else {
-            placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${listGap})`;
+      setPlaceholder((prev) => {
+        setItemInTransition(placeholder?.id || null);
+        if (placeholder) {
+          const placeholderElement = document.getElementById(placeholder.id);
+          if (instant) moveInstantly(placeholder.id);
+          if (placeholderElement) {
+            if (placeholder.above) {
+              placeholderElement.style.marginTop = `calc(${placeholder.height} + ${listGap})`;
+            } else {
+              placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${listGap})`;
+            }
           }
         }
-      }
-
-      setPlaceholder((prev) => {
         if (prev) {
           const prevPlaceholderElement = document.getElementById(prev.id);
           if (instant) moveInstantly(prev.id);
           if (prevPlaceholderElement) prevPlaceholderElement.style.margin = '0';
-          setTimeout(() => {
-            updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
-          }, 200);
         }
+        setTimeout(() => {
+          updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
+          getBoardPositions();
+        }, 200);
         return placeholder;
       });
     },
-    [draggedItem, updateItemPositions, moveInstantly]
+    [draggedItem, moveInstantly, updateItemPositions, getBoardPositions]
   );
 
   interface YPosWithPlaceholder {
@@ -337,6 +339,17 @@ export default function Board() {
     y2: number;
     y3?: number;
   }
+
+  const [itemInTransition, setItemInTransition] = useState<string | null>(null);
+
+  // use effect when itemInTransition is set to something set it to null after 200ms
+  useEffect(() => {
+    if (itemInTransition) {
+      setTimeout(() => {
+        setItemInTransition(null);
+      }, 200);
+    }
+  }, [itemInTransition]);
 
   const checkOnDrag = useCallback(
     (
@@ -400,6 +413,147 @@ export default function Board() {
         useLine === y1 ? 'top' : useLine === y2 ? 'bottom' : 'center';
       console.log('useLine', useLineName);
 
+      // now we go through the map and check if the useLine is between y0 and y1 of the item except the placeholder item
+      // get the closest item and top or bottom of the item
+      const closestEdge = { id: '', above: false };
+      let closestEdgeDistance = Infinity;
+
+      theYMap.forEach((itemYPos, itemId) => {
+        const { y0, y1, y2, y3 } = itemYPos;
+        const itemCenterY = (y1 + y2) / 2;
+
+        const placeholderElement = document.getElementById(itemId);
+        if (!placeholderElement) return;
+        // if (itemId === placeholder?.id) return;
+        // check that useLine is between y1 and y2 of the item
+        if (itemId === itemInTransition) return;
+
+        const nextItemId = Array.from(theYMap.keys())[
+          Array.from(theYMap.keys()).indexOf(itemId) + 1
+        ];
+        const prevItemId = Array.from(theYMap.keys())[
+          Array.from(theYMap.keys()).indexOf(itemId) - 1
+        ];
+
+        // closest edge
+        const distanceToTop = Math.abs(useLine - y1);
+        const distanceToBottom = Math.abs(useLine - y2);
+
+        if (distanceToTop < closestEdgeDistance) {
+          closestEdgeDistance = distanceToTop;
+          closestEdge.id = itemId;
+          closestEdge.above = true;
+        }
+        if (distanceToBottom < closestEdgeDistance) {
+          closestEdgeDistance = distanceToBottom;
+          closestEdge.id = itemId;
+          closestEdge.above = false;
+        }
+
+        if (
+          useLine > y1 + sensitivityPixels &&
+          useLine < y2 - sensitivityPixels &&
+          itemId !== placeholder?.id
+        ) {
+          const setPlaceholderAbove = useLine < itemCenterY;
+
+          const placeholderObj: Placeholder = {
+            id: itemId,
+            above: setPlaceholderAbove,
+            height: placeholderElement.style.height,
+            cords: itemYPos,
+          };
+          // if (
+          //   placeholder?.above === setPlaceholderAbove &&
+          //   placeholder.id === itemId
+          // )
+          //   return;
+          // applyAndSetPlaceholder(null);
+          applyAndSetPlaceholder(placeholderObj);
+          return false;
+
+          // if next item is placeholder
+        } else if (
+          itemId === placeholder?.id ||
+          (nextItemId === placeholder?.id && placeholder?.above) ||
+          (prevItemId === placeholder?.id && !placeholder?.above)
+        ) {
+          const timeToChangePlaceholderSide = placeholder?.above
+            ? useLine > y1 + sensitivityPixels && useLine < itemCenterY
+            : useLine < y2 - sensitivityPixels && useLine > itemCenterY;
+
+          console.log(
+            'timeToChangePlaceholderSide',
+            timeToChangePlaceholderSide
+          );
+          console.log('itemInTransition', itemInTransition);
+          if (timeToChangePlaceholderSide) {
+            const placeholderObj: Placeholder = {
+              id: itemId,
+              above: !placeholder.above,
+              height: placeholderElement.style.height,
+              cords: itemYPos,
+            };
+
+            applyAndSetPlaceholder(null);
+            applyAndSetPlaceholder(placeholderObj);
+            return false;
+          }
+          // updateItemPositions(draggedItem);
+
+          //
+        }
+        // if useLine is above the highest Y set placeholder above the first item
+        // else if (useLine < topY && !placeholder) {
+        //   const firstItemId = Array.from(theYMap.keys())[0];
+        //   const placeholderObj: Placeholder = {
+        //     id: firstItemId,
+        //     above: true,
+        //     height: placeholderElement.style.height,
+        //     cords: theYMap.get(firstItemId) as YPosWithPlaceholder,
+        //   };
+        //   console.log(`applying placeholder above ${firstItemId}`);
+        //   applyAndSetPlaceholder(null);
+        //   applyAndSetPlaceholder(placeholderObj);
+        // } else if (useLine > bottomY && !placeholder) {
+        //   const lastItemId = Array.from(theYMap.keys())[
+        //     Array.from(theYMap.keys()).length - 1
+        //   ];
+        //   const placeholderObj: Placeholder = {
+        //     id: lastItemId,
+        //     above: false,
+        //     height: placeholderElement.style.height,
+        //     cords: theYMap.get(lastItemId) as YPosWithPlaceholder,
+        //   };
+        //   console.log(`applying placeholder below ${lastItemId}`);
+        //   applyAndSetPlaceholder(null);
+        //   applyAndSetPlaceholder(placeholderObj);
+        // }
+        // else if no placeholder find the closest item and set placeholder above or below it
+
+        // else
+      });
+      console.log('closestEdge', closestEdge);
+
+      // if no placeholder but closest edge is found set placeholder above or below it
+      if (!placeholder && closestEdge.id) {
+        const placeholderElement = document.getElementById(closestEdge.id);
+        if (!placeholderElement) return;
+        const placeholderObj: Placeholder = {
+          id: closestEdge.id,
+          above: closestEdge.above,
+          height: placeholderElement.style.height,
+          cords: theYMap.get(closestEdge.id) as YPosWithPlaceholder,
+        };
+        console.log(
+          `applying placeholder ${closestEdge.above ? 'above' : 'below'} ${
+            closestEdge.id
+          }`
+        );
+        // applyAndSetPlaceholder(null);
+        applyAndSetPlaceholder(placeholderObj);
+      }
+
       // ? test for rerendering
       // setBoardContent((prev) => {
       //   // swap the first and last items in tge first list
@@ -418,7 +572,7 @@ export default function Board() {
       //   return newBoardContent;
       // });
     },
-    []
+    [applyAndSetPlaceholder, itemInTransition]
   );
 
   // const checkOnDrag = function (
