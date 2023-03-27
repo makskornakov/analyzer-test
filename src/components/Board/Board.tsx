@@ -457,7 +457,7 @@ export default function Board() {
         ) {
           // setting new placeholder
           // ? not sure of sensitivityPixels
-          const setPlaceholderAbove = useLine < itemCenterY - sensitivityPixels;
+          const setPlaceholderAbove = useLine < y1;
 
           const placeholderObj: Placeholder = {
             id: itemId,
