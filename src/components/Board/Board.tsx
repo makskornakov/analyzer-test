@@ -480,8 +480,10 @@ export default function Board() {
           placeholder
         ) {
           const timeToChangePlaceholderSide = placeholder?.above
-            ? useLine > y1 + sensitivityPixels && useLine < y2
-            : useLine < y2 - sensitivityPixels && useLine > y1;
+            ? useLine > y1 + sensitivityPixels &&
+              useLine < y2 - sensitivityPixels
+            : useLine < y2 - sensitivityPixels &&
+              useLine > y1 + sensitivityPixels;
 
           console.log(
             'timeToChangePlaceholderSide',
