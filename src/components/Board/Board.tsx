@@ -474,13 +474,14 @@ export default function Board() {
 
           // if next item is placeholder
         } else if (
-          itemId === placeholder?.id ||
-          (nextItemId === placeholder?.id && placeholder?.above) ||
-          (prevItemId === placeholder?.id && !placeholder?.above)
+          (itemId === placeholder?.id ||
+            (nextItemId === placeholder?.id && placeholder?.above) ||
+            (prevItemId === placeholder?.id && !placeholder?.above)) &&
+          placeholder
         ) {
           const timeToChangePlaceholderSide = placeholder?.above
-            ? useLine > y1 + sensitivityPixels && useLine < itemCenterY
-            : useLine < y2 - sensitivityPixels && useLine > itemCenterY;
+            ? useLine > y1 + sensitivityPixels && useLine < y2
+            : useLine < y2 - sensitivityPixels && useLine > y1;
 
           console.log(
             'timeToChangePlaceholderSide',
