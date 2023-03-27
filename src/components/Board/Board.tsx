@@ -181,15 +181,33 @@ export default function Board() {
       const boardList = document.getElementById(key);
       if (boardList) {
         boardList.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        boardList.style.padding = '0.5em';
       }
     });
     if (boardListInAction) {
+      const activeList = boardContent.get(boardListInAction as string);
       const boardList = document.getElementById(boardListInAction);
+      console.log('activeList', activeList);
+      // activelist filter draggedItem
+      if (activeList) {
+        const cleanActiveList = activeList?.filter(
+          (item) => item.id.toString() !== draggedItem
+        );
+        if (cleanActiveList?.length < 1) {
+          const draggedItemElement = document.getElementById(
+            draggedItem as string
+          );
+          if (boardList) {
+            boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + 0.5em)`;
+            // boardList.style.width = '40px';
+          }
+        }
+      }
       if (boardList) {
         boardList.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
       }
     }
-  }, [boardListInAction, boardContent]);
+  }, [boardListInAction, boardContent, draggedItem]);
 
   const moveInstantly = useCallback((id: string) => {
     console.log('moveInstantly called');
@@ -202,98 +220,98 @@ export default function Board() {
     }
   }, []);
 
-  function findPlaceholder(
-    y1: number,
-    y2: number,
-    boardList: string | null,
-    placeholder: Placeholder | null
-  ) {
-    const centerY = (y1 + y2) / 2;
-    // the input is the center y position of the dragged item
-    // take itemPositions of the active boardList without draggable item and only use y1 and y2
-    console.log('activeBoardList', boardList);
-    if (!boardList) return null;
-    const activeBoardList = boardContent.get(boardList);
-    if (!activeBoardList || !draggedItem) return null;
-    const activeBoardListWithoutDraggedItem = activeBoardList.filter(
-      (item) => String(item.id) !== draggedItem
-    );
+  // function findPlaceholder(
+  //   y1: number,
+  //   y2: number,
+  //   boardList: string | null,
+  //   placeholder: Placeholder | null
+  // ) {
+  //   const centerY = (y1 + y2) / 2;
+  //   // the input is the center y position of the dragged item
+  //   // take itemPositions of the active boardList without draggable item and only use y1 and y2
+  //   console.log('activeBoardList', boardList);
+  //   if (!boardList) return null;
+  //   const activeBoardList = boardContent.get(boardList);
+  //   if (!activeBoardList || !draggedItem) return null;
+  //   const activeBoardListWithoutDraggedItem = activeBoardList.filter(
+  //     (item) => String(item.id) !== draggedItem
+  //   );
 
-    // ? Items near the placeholder may be carried differently
-    const responsibleIds = [];
-    if (placeholder) {
-      responsibleIds.push(placeholder.id);
-      // find the index of the placeholder
-      const placeholderIndex = activeBoardListWithoutDraggedItem.findIndex(
-        (item) => String(item.id) === placeholder.id
-      );
-      // add the id of the item before the placeholder or after if exists
-      if (placeholder.above && placeholderIndex > 0) {
-        responsibleIds.push(
-          activeBoardListWithoutDraggedItem[placeholderIndex - 1].id
-        );
-      } else if (
-        !placeholder.above &&
-        placeholderIndex < activeBoardListWithoutDraggedItem.length - 1
-      ) {
-        responsibleIds.push(
-          activeBoardListWithoutDraggedItem[placeholderIndex + 1].id
-        );
-        // now we have 1-2 ids that are near the placeholder so they are carried specially
-      }
-    }
+  //   // ? Items near the placeholder may be carried differently
+  //   const responsibleIds = [];
+  //   if (placeholder) {
+  //     responsibleIds.push(placeholder.id);
+  //     // find the index of the placeholder
+  //     const placeholderIndex = activeBoardListWithoutDraggedItem.findIndex(
+  //       (item) => String(item.id) === placeholder.id
+  //     );
+  //     // add the id of the item before the placeholder or after if exists
+  //     if (placeholder.above && placeholderIndex > 0) {
+  //       responsibleIds.push(
+  //         activeBoardListWithoutDraggedItem[placeholderIndex - 1].id
+  //       );
+  //     } else if (
+  //       !placeholder.above &&
+  //       placeholderIndex < activeBoardListWithoutDraggedItem.length - 1
+  //     ) {
+  //       responsibleIds.push(
+  //         activeBoardListWithoutDraggedItem[placeholderIndex + 1].id
+  //       );
+  //       // now we have 1-2 ids that are near the placeholder so they are carried specially
+  //     }
+  //   }
 
-    // find the index of the first item in itemPositions
-    const firstItemId = activeBoardListWithoutDraggedItem[0].id;
-    const lastItemId =
-      activeBoardListWithoutDraggedItem[
-        activeBoardListWithoutDraggedItem.length - 1
-      ].id;
+  //   // find the index of the first item in itemPositions
+  //   const firstItemId = activeBoardListWithoutDraggedItem[0].id;
+  //   const lastItemId =
+  //     activeBoardListWithoutDraggedItem[
+  //       activeBoardListWithoutDraggedItem.length - 1
+  //     ].id;
 
-    const firstItemPosition = itemPositions.get(firstItemId.toString());
-    const lastItemPosition = itemPositions.get(lastItemId.toString());
+  //   const firstItemPosition = itemPositions.get(firstItemId.toString());
+  //   const lastItemPosition = itemPositions.get(lastItemId.toString());
 
-    if (!firstItemPosition || !lastItemPosition) return null;
+  //   if (!firstItemPosition || !lastItemPosition) return null;
 
-    const maxTopItemOrPlaceholderY =
-      placeholder?.id === String(firstItemId) && placeholder.above
-        ? placeholder.cords.y1
-        : firstItemPosition.y1;
+  //   const maxTopItemOrPlaceholderY =
+  //     placeholder?.id === String(firstItemId) && placeholder.above
+  //       ? placeholder.cords.y1
+  //       : firstItemPosition.y1;
 
-    const minBottomItemOrPlaceholderY =
-      placeholder?.id === String(lastItemId) && !placeholder.above
-        ? placeholder.cords.y2
-        : lastItemPosition.y2;
+  //   const minBottomItemOrPlaceholderY =
+  //     placeholder?.id === String(lastItemId) && !placeholder.above
+  //       ? placeholder.cords.y2
+  //       : lastItemPosition.y2;
 
-    console.log(placeholder?.cords);
+  //   console.log(placeholder?.cords);
 
-    const draggedAboveFirstItem = centerY < maxTopItemOrPlaceholderY;
-    const draggedBelowLastItem = centerY > minBottomItemOrPlaceholderY;
+  //   const draggedAboveFirstItem = centerY < maxTopItemOrPlaceholderY;
+  //   const draggedBelowLastItem = centerY > minBottomItemOrPlaceholderY;
 
-    // checkLine is y1 if dragged above first item and y2 if dragged below last item and centerY otherwise
-    const checkYLine =
-      !draggedAboveFirstItem && !draggedBelowLastItem
-        ? centerY
-        : draggedAboveFirstItem
-        ? y2
-        : y1;
+  //   // checkLine is y1 if dragged above first item and y2 if dragged below last item and centerY otherwise
+  //   const checkYLine =
+  //     !draggedAboveFirstItem && !draggedBelowLastItem
+  //       ? centerY
+  //       : draggedAboveFirstItem
+  //       ? y2
+  //       : y1;
 
-    // ! tests
-    const checkLineName =
-      checkYLine === centerY
-        ? 'center'
-        : draggedAboveFirstItem
-        ? 'bottom'
-        : 'top';
+  //   // ! tests
+  //   const checkLineName =
+  //     checkYLine === centerY
+  //       ? 'center'
+  //       : draggedAboveFirstItem
+  //       ? 'bottom'
+  //       : 'top';
 
-    console.log('checkYLine', checkLineName);
-    // innerText of draggable item set to checkLineName
-    const draggableItem = document.getElementById(draggedItem);
-    if (draggableItem) draggableItem.innerText = checkLineName;
+  //   console.log('checkYLine', checkLineName);
+  //   // innerText of draggable item set to checkLineName
+  //   const draggableItem = document.getElementById(draggedItem);
+  //   if (draggableItem) draggableItem.innerText = checkLineName;
 
-    if (draggedAboveFirstItem) console.log('above first item');
-    if (draggedBelowLastItem) console.log('below last item');
-  }
+  //   if (draggedAboveFirstItem) console.log('above first item');
+  //   if (draggedBelowLastItem) console.log('below last item');
+  // }
 
   const applyAndSetPlaceholder = useCallback(
     (
@@ -648,6 +666,16 @@ export default function Board() {
         applyAndSetPlaceholder(placeholderObj);
       }
 
+      //! if empty board list and no placeholder generate general placeholder
+      // if (!placeholder && !Array.from(theYMap.keys()).length) {
+      //   const boardListContainer = document.getElementById(boardList);
+      //   if (!boardListContainer) return;
+      //   const draggedElement = document.getElementById(draggedItem);
+      //   if (!draggedElement) return;
+      //   // add margin top to the container
+      //   boardListContainer.style.height = `calc(${draggedElement.style.height} + ${listGap})`;
+      // }
+
       // ? test for rerendering
       // setBoardContent((prev) => {
       //   // swap the first and last items in tge first list
@@ -695,6 +723,8 @@ export default function Board() {
       const mostIntersectingBoardList =
         findTheMostIntersectingBoardList(currentPosition);
 
+      if (mostIntersectingBoardList) moveInstantly(mostIntersectingBoardList);
+
       setBoardListInAction(mostIntersectingBoardList);
 
       const usePlaceholder = newPlaceholder || placeholder;
@@ -741,11 +771,11 @@ export default function Board() {
     [
       itemPositions,
       findTheMostIntersectingBoardList,
+      moveInstantly,
       placeholder,
       placeholderInActiveBoardList,
       boardContent,
       checkOnDrag,
-
       applyAndSetPlaceholder,
       getBoardPositions,
     ]
@@ -809,54 +839,137 @@ export default function Board() {
 
     dragElement.style.zIndex = 'initial';
     dragElement.style.transition = '0.2s';
-    if (!placeholder) {
+
+    const boardListKey = Array.from(boardContent.keys()).find((key) => {
+      const boardListContent = boardContent.get(key) as BoardListContent;
+      return boardListContent.find((item) => item.id.toString() === id);
+    });
+
+    if (!placeholder && !boardListInAction) {
       // generateInitialPlaceholder(id, data.node.style.height);
       const placeID = generateInitialPlaceholder(id, data.node.style.height);
-      if (!placeID) return;
+      // if (!placeID) return;
+      // dragElement.style.position = 'initial';
+
+      const neededList = boardContent.get(boardListKey as string);
+      const filteredList = neededList?.filter(
+        (item) => item.id.toString() !== id
+      );
+      if (filteredList?.length === 0)
+        setBoardListInAction(boardListKey as string);
       setTimeout(() => {
+        // moveInstantly(id);
         dragElement.style.position = 'initial';
         // dragElement.style.top = 'initial';
         // dragElement.style.left = 'initial';
-
+        const boardListElement = document.getElementById(
+          boardListKey as string
+        );
+        moveInstantly(boardListKey as string);
+        if (boardListElement) boardListElement.style.padding = '0.5em';
         // ? IF the code below is commented out the placeholder will lag on fast drag out and drag stop
 
-        moveInstantly(placeID.id);
-        const newPlaceholder = document.getElementById(placeID.id);
-        if (newPlaceholder) newPlaceholder.style.margin = '0';
-
+        if (placeID) {
+          moveInstantly(placeID.id);
+          const newPlaceholder = document.getElementById(placeID.id as string);
+          if (newPlaceholder) newPlaceholder.style.margin = '0';
+        }
         applyAndSetPlaceholder(null, true);
         // setPlaceholder(null);
         getBoardPositions();
         setDraggedItem(null);
         setBoardListInAction(null);
       }, 200);
-    } else {
+    } else if (!placeholder && boardListInAction !== boardListKey) {
+      console.log('time to move to empty list');
+      // just delete the dragged item from the old list and add it to the new list
+      const boardListItems = boardContent.get(boardListInAction as string);
+      if (!boardListItems) return;
+      const draggedItemList = boardContent.get(boardListKey as string);
+      if (!draggedItemList) return;
+
+      const draggedItem = draggedItemList.find(
+        (item) => item.id.toString() === id
+      );
+      if (!draggedItem) return;
+
+      // remove the dragged item from the old list
+      const newDraggedItemList = draggedItemList.filter(
+        (item) => item.id.toString() !== id
+      );
+      // add the dragged item to the new list
+      const newBoardListItems = [...boardListItems, draggedItem];
+
+      // update the board content
+      const boardListElement = document.getElementById(
+        boardListInAction as string
+      );
+      moveInstantly(boardListInAction as string);
+      if (boardListElement) boardListElement.style.padding = '0.5em';
+
+      dragElement.style.position = 'initial';
+
+      setBoardContent((prev) => {
+        const newBoardContent = new Map(prev);
+        newBoardContent.set(boardListInAction as string, newBoardListItems);
+        newBoardContent.set(boardListKey as string, newDraggedItemList);
+        return newBoardContent;
+      });
+
+      setDraggedItem(null);
+      setBoardListInAction(null);
+    } else if (placeholder) {
       // if (placeHolderElement) {
 
       //   placeHolderElement.style.marginTop = '0';
       //   placeHolderElement.style.marginBottom = '0';
       // }
+
       applyAndSetPlaceholder(null, true);
-
-      moveInstantly(id);
-
       dragElement.style.position = 'initial';
+      setDraggedItem(null);
+      setBoardListInAction((prev) => {
+        if (prev) moveInstantly(prev);
+        return null;
+      });
+      const theList = boardContent.get(boardListInAction as string);
+      if (!theList) return;
+      const placeholderIndex = theList.findIndex(
+        (item) => item.id.toString() === placeholder?.id
+      );
+      const draggedItemIndex = theList.findIndex(
+        (item) => item.id.toString() === id
+      );
+      const calcItem = placeholder.above
+        ? placeholderIndex - 1
+        : placeholderIndex + 1;
+
+      if (
+        calcItem === draggedItemIndex &&
+        placeholderIndex !== -1 &&
+        draggedItemIndex !== -1
+      ) {
+        console.log('no need to update');
+        return;
+      }
+      moveInstantly(id);
       // dragElement.style.top = 'initial';
       // dragElement.style.left = 'initial';
       // updateItemPositions();
-
+      // moveInstantly(boardListInAction as string);
       updateBoardOrder(
         id,
         placeholder as Placeholder,
         boardListInAction as string
       );
-
-      setTimeout(() => {
-        setDraggedItem(null);
-        setBoardListInAction(null);
-      }, 200);
+    } else {
+      dragElement.style.position = 'initial';
+      setDraggedItem(null);
+      setBoardListInAction((prev) => {
+        if (prev) moveInstantly(prev);
+        return null;
+      });
     }
-    // setBoardListInAction(null);
   }
 
   return (

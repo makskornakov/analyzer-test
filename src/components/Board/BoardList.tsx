@@ -97,6 +97,8 @@ export default function BoardList({
           gap,
           userSelect: 'none',
           padding: '0.5em',
+          transition: '0.2s',
+          transitionProperty: 'padding',
         }}
       >
         {boardList.map((item) => (
