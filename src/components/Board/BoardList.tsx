@@ -140,13 +140,14 @@ export default function BoardList({
                 dragElement.style.top = initialPosition.y1 + 'px';
                 dragElement.style.left = initialPosition.x1 + 'px';
                 dragElement.style.zIndex = '2';
-                // dragElement.style.cursor = 'grabbing';
+                dragElement.style.cursor = 'grabbing';
                 dragElement.style.transition = 'none';
               }
               onDragStart(e, data);
               // handleDrag(e, data);
             }}
             onDrag={(e, data) => {
+              e.preventDefault(); //? This is a fix for the cursor in Safari. To check, uncomment it and try dragging an item — the cursor will look like it's selecting text.
               handleDrag(e, data);
               // const parent = document.getElementById(id);
               // if (!parent) return;
@@ -156,6 +157,8 @@ export default function BoardList({
               onDragStop(e, data);
               const id = data.node.id;
               const dragElement = document.getElementById(id);
+
+              if (dragElement) dragElement.style.cursor = 'grab';
 
               // remove active styles
               if (itemActiveStyle && dragElement)
