@@ -724,8 +724,8 @@ export default function Board({
       const filteredList = neededList?.filter(
         (item) => item.id.toString() !== id
       );
-      if (filteredList?.length === 0)
-        setBoardListInAction(boardListKey as string);
+      // if (filteredList?.length === 0) //? this can be added back to prevent "last frame" animation of the list being "active" on item release out of list bounds. Idea: option "flash when back".
+      setBoardListInAction(boardListKey as string);
 
       setTimeout(() => {
         dragElement.style.position = 'initial';
