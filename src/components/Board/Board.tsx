@@ -306,7 +306,7 @@ export default function Board() {
       console.log('draggedItem', useDraggedItem);
       // set margin of the placeholder
       setPlaceholder((prev) => {
-        setItemInTransition(placeholder?.id || null);
+        // setItemInTransition(placeholder?.id || null);
         if (placeholder) {
           const placeholderElement = document.getElementById(placeholder.id);
           if (instant) moveInstantly(placeholder.id);
@@ -417,7 +417,7 @@ export default function Board() {
       // get the closest item and top or bottom of the item
       const closestEdge = { id: '', above: false };
       let closestEdgeDistance = Infinity;
-
+      let set = false;
       theYMap.forEach((itemYPos, itemId) => {
         const { y0, y1, y2, y3 } = itemYPos;
         const itemCenterY = (y1 + y2) / 2;
@@ -426,7 +426,6 @@ export default function Board() {
         if (!placeholderElement) return;
         // if (itemId === placeholder?.id) return;
         // check that useLine is between y1 and y2 of the item
-        if (itemId === itemInTransition) return;
 
         const nextItemId = Array.from(theYMap.keys())[
           Array.from(theYMap.keys()).indexOf(itemId) + 1
@@ -435,6 +434,7 @@ export default function Board() {
           Array.from(theYMap.keys()).indexOf(itemId) - 1
         ];
 
+        if (itemId === itemInTransition) return;
         // closest edge
         const distanceToTop = Math.abs(useLine - y1);
         const distanceToBottom = Math.abs(useLine - y2);
@@ -455,11 +455,13 @@ export default function Board() {
           useLine < y2 - sensitivityPixels &&
           itemId !== placeholder?.id
         ) {
-          const setPlaceholderAbove = useLine < itemCenterY;
+          // setting new placeholder
+          // ? not sure of sensitivityPixels
+          const setPlaceholderAbove = useLine < itemCenterY - sensitivityPixels;
 
           const placeholderObj: Placeholder = {
             id: itemId,
-            above: setPlaceholderAbove,
+            above: !setPlaceholderAbove,
             height: placeholderElement.style.height,
             cords: itemYPos,
           };
@@ -469,16 +471,17 @@ export default function Board() {
           // )
           //   return;
           // applyAndSetPlaceholder(null);
+          setItemInTransition(itemId);
+          set = true;
           applyAndSetPlaceholder(placeholderObj);
           return false;
-
-          // if next item is placeholder
         } else if (
           (itemId === placeholder?.id ||
             (nextItemId === placeholder?.id && placeholder?.above) ||
             (prevItemId === placeholder?.id && !placeholder?.above)) &&
           placeholder
         ) {
+          // when the dragged item touches the placeholder its time to move the intersected item to the other side since there is more space
           const timeToChangePlaceholderSide = placeholder?.above
             ? useLine > y1 + sensitivityPixels &&
               useLine < y2 - sensitivityPixels
@@ -490,6 +493,7 @@ export default function Board() {
             timeToChangePlaceholderSide
           );
           console.log('itemInTransition', itemInTransition);
+          // change placeholders side
           if (timeToChangePlaceholderSide) {
             const placeholderObj: Placeholder = {
               id: itemId,
@@ -497,7 +501,8 @@ export default function Board() {
               height: placeholderElement.style.height,
               cords: itemYPos,
             };
-
+            setItemInTransition(itemId);
+            set = true;
             applyAndSetPlaceholder(null);
             applyAndSetPlaceholder(placeholderObj);
             return false;
@@ -539,7 +544,12 @@ export default function Board() {
       console.log('closestEdge', closestEdge);
 
       // if no placeholder but closest edge is found set placeholder above or below it
-      if (!placeholder && closestEdge.id) {
+      // const wrongBoardListInAction = placeholder?.id
+      //   ? Array.from(theYMap.keys()).includes(placeholder?.id)
+      //   : false;
+      // console.log('wrongBoardListInAction', wrongBoardListInAction);
+      // if ((!placeholder || !wrongBoardListInAction) && closestEdge.id) {
+      if (!placeholder && closestEdge.id && !set) {
         const placeholderElement = document.getElementById(closestEdge.id);
         if (!placeholderElement) return;
         const placeholderObj: Placeholder = {
@@ -554,6 +564,7 @@ export default function Board() {
           }`
         );
         // applyAndSetPlaceholder(null);
+        setItemInTransition(closestEdge.id);
         applyAndSetPlaceholder(placeholderObj);
       }
 
