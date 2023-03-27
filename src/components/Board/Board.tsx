@@ -340,6 +340,86 @@ export default function Board() {
     y3?: number;
   }
 
+  const updateBoardOrder = useCallback(
+    (dragged: string, placeholder: Placeholder, boardList: string) => {
+      console.log('updateBoardOrder called');
+      // get the boardList of the dragged item
+      const draggedItemBoardListName = Array.from(boardContent.keys()).find(
+        (key) =>
+          boardContent.get(key)?.find((item) => String(item.id) === dragged)
+      );
+      if (!draggedItemBoardListName) return;
+
+      const sameBoardList = draggedItemBoardListName === boardList;
+
+      if (sameBoardList) {
+        const theBoardList = boardContent.get(boardList);
+        if (!theBoardList) return;
+        const draggedItemIndex = theBoardList.findIndex(
+          (item) => String(item.id) === dragged
+        );
+        const draggedItem = theBoardList[draggedItemIndex];
+        // remove the dragged item from the boardList
+        theBoardList.splice(draggedItemIndex, 1);
+        const placeholderIndex = theBoardList.findIndex(
+          (item) => String(item.id) === placeholder.id
+        );
+        if (placeholder.above) {
+          theBoardList.splice(placeholderIndex, 0, draggedItem);
+        } else {
+          theBoardList.splice(placeholderIndex + 1, 0, draggedItem);
+        }
+        setBoardContent((prev) => {
+          const newBoardContent = new Map(prev);
+          newBoardContent.set(boardList, theBoardList);
+          return newBoardContent;
+        });
+      } else {
+        const draggedItemBoardList = [
+          ...(boardContent.get(draggedItemBoardListName) as BoardItem[]),
+        ];
+        const placeHolderBoardList = [
+          ...(boardContent.get(boardList) as BoardItem[]),
+        ];
+        if (!draggedItemBoardList || !placeHolderBoardList) return;
+
+        // get the index of the dragged item
+        const draggedItemIndex = draggedItemBoardList.findIndex(
+          (item) => String(item.id) === dragged
+        );
+        // get the index of the placeholder
+        const placeholderIndex = placeHolderBoardList.findIndex(
+          (item) => String(item.id) === placeholder?.id
+        );
+        if (draggedItemIndex === -1 || placeholderIndex === -1) return;
+        // save the dragged item
+        const draggedItem = draggedItemBoardList[draggedItemIndex];
+        // remove the dragged item from the boardList
+        draggedItemBoardList.splice(draggedItemIndex, 1);
+
+        placeHolderBoardList.splice(
+          placeholderIndex + (placeholder.above ? 0 : 1),
+          0,
+          draggedItem
+        );
+        setBoardContent((prev) => {
+          const newBoardContent = new Map(prev);
+          newBoardContent.set(boardList, placeHolderBoardList);
+          newBoardContent.set(draggedItemBoardListName, draggedItemBoardList);
+          return newBoardContent;
+        });
+      }
+      // updateItemPositions();
+      // getBoardPositions();
+      // insert the dragged item above or below the placeholder
+
+      // update the boardContent
+
+      // setDraggedItem(null);
+    },
+    [boardContent]
+  );
+
   const [itemInTransition, setItemInTransition] = useState<string | null>(null);
 
   // use effect when itemInTransition is set to something set it to null after 200ms
@@ -665,6 +745,7 @@ export default function Board() {
       placeholderInActiveBoardList,
       boardContent,
       checkOnDrag,
+
       applyAndSetPlaceholder,
       getBoardPositions,
     ]
@@ -689,6 +770,7 @@ export default function Board() {
         (item) => item.id.toString() === id
       );
 
+      if (boardListContent.length < 2) return;
       const isFirstChild = itemIndex === 0;
       const targetItem = boardListContent[itemIndex + (isFirstChild ? 1 : -1)];
       const targetItemPosition = itemPositions.get(targetItem.id.toString());
@@ -733,10 +815,11 @@ export default function Board() {
       if (!placeID) return;
       setTimeout(() => {
         dragElement.style.position = 'initial';
-        dragElement.style.top = 'initial';
-        dragElement.style.left = 'initial';
+        // dragElement.style.top = 'initial';
+        // dragElement.style.left = 'initial';
 
         // ? IF the code below is commented out the placeholder will lag on fast drag out and drag stop
+
         moveInstantly(placeID.id);
         const newPlaceholder = document.getElementById(placeID.id);
         if (newPlaceholder) newPlaceholder.style.margin = '0';
@@ -745,15 +828,35 @@ export default function Board() {
         // setPlaceholder(null);
         getBoardPositions();
         setDraggedItem(null);
+        setBoardListInAction(null);
       }, 200);
     } else {
-      dragElement.style.position = 'initial';
-      dragElement.style.top = 'initial';
-      dragElement.style.left = 'initial';
+      // if (placeHolderElement) {
 
+      //   placeHolderElement.style.marginTop = '0';
+      //   placeHolderElement.style.marginBottom = '0';
+      // }
       applyAndSetPlaceholder(null, true);
+
+      moveInstantly(id);
+
+      dragElement.style.position = 'initial';
+      // dragElement.style.top = 'initial';
+      // dragElement.style.left = 'initial';
+      // updateItemPositions();
+
+      updateBoardOrder(
+        id,
+        placeholder as Placeholder,
+        boardListInAction as string
+      );
+
+      setTimeout(() => {
+        setDraggedItem(null);
+        setBoardListInAction(null);
+      }, 200);
     }
-    setBoardListInAction(null);
+    // setBoardListInAction(null);
   }
 
   return (
