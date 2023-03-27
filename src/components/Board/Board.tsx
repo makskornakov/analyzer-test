@@ -199,7 +199,6 @@ export default function Board() {
           );
           if (boardList) {
             boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + 0.5em)`;
-            // boardList.style.width = '40px';
           }
         }
       }
@@ -219,99 +218,6 @@ export default function Board() {
       }, 0);
     }
   }, []);
-
-  // function findPlaceholder(
-  //   y1: number,
-  //   y2: number,
-  //   boardList: string | null,
-  //   placeholder: Placeholder | null
-  // ) {
-  //   const centerY = (y1 + y2) / 2;
-  //   // the input is the center y position of the dragged item
-  //   // take itemPositions of the active boardList without draggable item and only use y1 and y2
-  //   console.log('activeBoardList', boardList);
-  //   if (!boardList) return null;
-  //   const activeBoardList = boardContent.get(boardList);
-  //   if (!activeBoardList || !draggedItem) return null;
-  //   const activeBoardListWithoutDraggedItem = activeBoardList.filter(
-  //     (item) => String(item.id) !== draggedItem
-  //   );
-
-  //   // ? Items near the placeholder may be carried differently
-  //   const responsibleIds = [];
-  //   if (placeholder) {
-  //     responsibleIds.push(placeholder.id);
-  //     // find the index of the placeholder
-  //     const placeholderIndex = activeBoardListWithoutDraggedItem.findIndex(
-  //       (item) => String(item.id) === placeholder.id
-  //     );
-  //     // add the id of the item before the placeholder or after if exists
-  //     if (placeholder.above && placeholderIndex > 0) {
-  //       responsibleIds.push(
-  //         activeBoardListWithoutDraggedItem[placeholderIndex - 1].id
-  //       );
-  //     } else if (
-  //       !placeholder.above &&
-  //       placeholderIndex < activeBoardListWithoutDraggedItem.length - 1
-  //     ) {
-  //       responsibleIds.push(
-  //         activeBoardListWithoutDraggedItem[placeholderIndex + 1].id
-  //       );
-  //       // now we have 1-2 ids that are near the placeholder so they are carried specially
-  //     }
-  //   }
-
-  //   // find the index of the first item in itemPositions
-  //   const firstItemId = activeBoardListWithoutDraggedItem[0].id;
-  //   const lastItemId =
-  //     activeBoardListWithoutDraggedItem[
-  //       activeBoardListWithoutDraggedItem.length - 1
-  //     ].id;
-
-  //   const firstItemPosition = itemPositions.get(firstItemId.toString());
-  //   const lastItemPosition = itemPositions.get(lastItemId.toString());
-
-  //   if (!firstItemPosition || !lastItemPosition) return null;
-
-  //   const maxTopItemOrPlaceholderY =
-  //     placeholder?.id === String(firstItemId) && placeholder.above
-  //       ? placeholder.cords.y1
-  //       : firstItemPosition.y1;
-
-  //   const minBottomItemOrPlaceholderY =
-  //     placeholder?.id === String(lastItemId) && !placeholder.above
-  //       ? placeholder.cords.y2
-  //       : lastItemPosition.y2;
-
-  //   console.log(placeholder?.cords);
-
-  //   const draggedAboveFirstItem = centerY < maxTopItemOrPlaceholderY;
-  //   const draggedBelowLastItem = centerY > minBottomItemOrPlaceholderY;
-
-  //   // checkLine is y1 if dragged above first item and y2 if dragged below last item and centerY otherwise
-  //   const checkYLine =
-  //     !draggedAboveFirstItem && !draggedBelowLastItem
-  //       ? centerY
-  //       : draggedAboveFirstItem
-  //       ? y2
-  //       : y1;
-
-  //   // ! tests
-  //   const checkLineName =
-  //     checkYLine === centerY
-  //       ? 'center'
-  //       : draggedAboveFirstItem
-  //       ? 'bottom'
-  //       : 'top';
-
-  //   console.log('checkYLine', checkLineName);
-  //   // innerText of draggable item set to checkLineName
-  //   const draggableItem = document.getElementById(draggedItem);
-  //   if (draggableItem) draggableItem.innerText = checkLineName;
-
-  //   if (draggedAboveFirstItem) console.log('above first item');
-  //   if (draggedBelowLastItem) console.log('below last item');
-  // }
 
   const applyAndSetPlaceholder = useCallback(
     (
@@ -609,35 +515,6 @@ export default function Board() {
 
           //
         }
-        // if useLine is above the highest Y set placeholder above the first item
-        // else if (useLine < topY && !placeholder) {
-        //   const firstItemId = Array.from(theYMap.keys())[0];
-        //   const placeholderObj: Placeholder = {
-        //     id: firstItemId,
-        //     above: true,
-        //     height: placeholderElement.style.height,
-        //     cords: theYMap.get(firstItemId) as YPosWithPlaceholder,
-        //   };
-        //   console.log(`applying placeholder above ${firstItemId}`);
-        //   applyAndSetPlaceholder(null);
-        //   applyAndSetPlaceholder(placeholderObj);
-        // } else if (useLine > bottomY && !placeholder) {
-        //   const lastItemId = Array.from(theYMap.keys())[
-        //     Array.from(theYMap.keys()).length - 1
-        //   ];
-        //   const placeholderObj: Placeholder = {
-        //     id: lastItemId,
-        //     above: false,
-        //     height: placeholderElement.style.height,
-        //     cords: theYMap.get(lastItemId) as YPosWithPlaceholder,
-        //   };
-        //   console.log(`applying placeholder below ${lastItemId}`);
-        //   applyAndSetPlaceholder(null);
-        //   applyAndSetPlaceholder(placeholderObj);
-        // }
-        // else if no placeholder find the closest item and set placeholder above or below it
-
-        // else
       });
       console.log('closestEdge', closestEdge);
 
@@ -675,37 +552,9 @@ export default function Board() {
       //   // add margin top to the container
       //   boardListContainer.style.height = `calc(${draggedElement.style.height} + ${listGap})`;
       // }
-
-      // ? test for rerendering
-      // setBoardContent((prev) => {
-      //   // swap the first and last items in tge first list
-      //   const newBoardContent = new Map(prev);
-      //   const activeBoardList = newBoardContent.get(boardList);
-      //   if (!activeBoardList) return prev;
-      //   // swap the first and last items in tge first list
-      //   const newActiveBoardList = [...activeBoardList];
-      //   const firstItem = newActiveBoardList[0];
-      //   const lastItem = newActiveBoardList[newActiveBoardList.length - 1];
-      //   newActiveBoardList[0] = lastItem;
-      //   newActiveBoardList[newActiveBoardList.length - 1] = firstItem;
-
-      //   newBoardContent.set(boardList, newActiveBoardList);
-
-      //   return newBoardContent;
-      // });
     },
     [applyAndSetPlaceholder, itemInTransition]
   );
-
-  // const checkOnDrag = function (
-  //   draggedItem: string,
-  //   currentPosition: Position,
-  //   boardList: string | null,
-  //   placeholder: Placeholder | null,
-  //   itemPositions: Map<string, Position>
-  // ) {
-
-  // };
 
   const handleDrag = useCallback(
     (e: DraggableEvent, data: DraggableData, newPlaceholder?: Placeholder) => {
