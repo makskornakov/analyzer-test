@@ -51,7 +51,7 @@ export default function BoardList({
           gap,
           padding: listPadding,
 
-          transition: `${transitionDuration / 1000}s`,
+          transition: `${transitionDuration}ms`,
 
           ...listStyle,
         }}
@@ -121,7 +121,7 @@ export default function BoardList({
                 width: width,
                 height: itemHeight,
 
-                transition: `${transitionDuration / 1000}s`,
+                transition: `${transitionDuration}ms`,
 
                 ...itemStyle,
               }}

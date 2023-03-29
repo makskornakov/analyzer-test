@@ -255,7 +255,7 @@ export default function Board({
       if (itemElement) {
         itemElement.style.transition = '0s';
         setTimeout(() => {
-          itemElement.style.transition = `${transitionDuration / 1000}s`;
+          itemElement.style.transition = `${transitionDuration}ms`;
         }, 0);
       }
     },
@@ -706,7 +706,7 @@ export default function Board({
     if (!dragElement) return;
 
     dragElement.style.zIndex = 'initial';
-    dragElement.style.transition = `${transitionDuration / 1000}s`;
+    dragElement.style.transition = `${transitionDuration}ms`;
 
     const boardListKey = Array.from(boardContent.keys()).find((key) => {
       const boardListContent = boardContent.get(key) as BoardListContent;
