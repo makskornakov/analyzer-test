@@ -155,13 +155,6 @@ export default function Board({
     console.log('boardPositions', boardPositions);
   }, [boardPositions]);
 
-  // !
-  // useEffect(() => {
-  //   updateItemPositions();
-  // }, [, updateItemPositions, placeholder]);
-
-  // !
-
   const findTheMostIntersectingBoardList = useCallback(
     // ? can be redone to be more efficient
     (currentPosition: Position) => {
@@ -406,7 +399,7 @@ export default function Board({
 
   const checkOnDrag = useCallback(
     (
-      draggedItem: string,
+      // draggedItem: string,
       currentPosition: Position,
       boardList: string | null,
       placeholder: Placeholder | null,
@@ -472,8 +465,8 @@ export default function Board({
       let closestEdgeDistance = Infinity;
       let set = false;
       theYMap.forEach((itemYPos, itemId) => {
-        const { y0, y1, y2, y3 } = itemYPos;
-        const itemCenterY = (y1 + y2) / 2;
+        const { y1, y2 } = itemYPos;
+        // const itemCenterY = (y1 + y2) / 2;
 
         const placeholderElement = document.getElementById(itemId);
         if (!placeholderElement) return;
@@ -631,7 +624,7 @@ export default function Board({
         moveInstantly(mostIntersectingBoardList);
 
       checkOnDrag(
-        id,
+        // id,
         currentPosition,
         mostIntersectingBoardList,
         usePlaceholder,
