@@ -1,5 +1,5 @@
 import { BoardListContent, Position } from './Board';
-import Draggable from 'react-draggable';
+import Draggable, { ControlPosition } from 'react-draggable';
 import type { CSSProperties } from 'styled-components';
 
 interface BoardListProps {
@@ -7,7 +7,7 @@ interface BoardListProps {
   boardList: BoardListContent;
   itemPositions: Map<string, Position>;
   // placeholder: Placeholder | null;
-  // dragItem: string | null;
+  draggedItem: string | null;
   width: string;
   itemHeight: string;
   gap: string;
@@ -19,6 +19,7 @@ interface BoardListProps {
   handleDrag: (e: any, data: any) => void;
   onDragStart: (e: any, data: any) => void;
   onDragStop: (e: any, data: any) => void;
+  currentDraggingItemInitialPosition: ControlPosition;
 }
 
 export default function BoardList({
@@ -26,7 +27,7 @@ export default function BoardList({
   boardList,
   itemPositions,
   // placeholder,
-  // dragItem,
+  draggedItem,
   width,
   itemHeight,
   gap,
@@ -38,6 +39,7 @@ export default function BoardList({
   handleDrag,
   onDragStart,
   onDragStop,
+  currentDraggingItemInitialPosition,
 }: BoardListProps) {
   // add margin to the placeholder element
   // useEffect(() => {
@@ -117,7 +119,9 @@ export default function BoardList({
           <Draggable
             key={item.id}
             defaultPosition={{ x: 0, y: 0 }}
-            position={{ x: 0, y: 0 }}
+            position={
+              draggedItem === item.id.toString() ? currentDraggingItemInitialPosition : undefined
+            }
             nodeRef={undefined}
             // grid={[25, 25]}
             // scale={1}
@@ -163,13 +167,8 @@ export default function BoardList({
               // remove active styles
               if (itemActiveStyle && dragElement)
                 Object.keys(itemActiveStyle).forEach((key) => {
-                  const value = itemStyle
-                    ? itemStyle[key as keyof CSSProperties]
-                    : '';
-                  dragElement.style.setProperty(
-                    key,
-                    value ? (value as string) : ''
-                  );
+                  const value = itemStyle ? itemStyle[key as keyof CSSProperties] : '';
+                  dragElement.style.setProperty(key, value ? (value as string) : '');
                 });
 
               const { x, y } = data;
