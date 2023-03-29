@@ -62,17 +62,16 @@ export default function BoardList({
             defaultPosition={{ x: 0, y: 0 }}
             position={{ x: 0, y: 0 }}
             nodeRef={undefined}
-            // grid={[25, 25]}
-            // scale={1}
-            onStart={(e, data) => {
-              const id = data.node.id;
-              const initialPosition = itemPositions.get(id);
-              if (!initialPosition) return;
-              const dragElement = document.getElementById(id);
-              if (dragElement) {
-                // active styles
-                // go through all active styles and apply them to the dragElement
+            onStart={
+              (e, data) => {
+                const id = data.node.id;
+                const initialPosition = itemPositions.get(id);
+                if (!initialPosition) return;
+                const dragElement = document.getElementById(id);
+                if (!dragElement) return;
+                onDragStart(e, data);
 
+                // apply active styles
                 if (itemActiveStyle)
                   Object.keys(itemActiveStyle).forEach((key) => {
                     const value = itemActiveStyle[key as keyof CSSProperties];
@@ -86,22 +85,21 @@ export default function BoardList({
                 dragElement.style.cursor = 'grabbing';
                 dragElement.style.transition = 'none';
               }
-              onDragStart(e, data);
               // handleDrag(e, data);
-            }}
+            }
             onDrag={(e, data) => {
               e.preventDefault(); //? This is a fix for the cursor in Safari. To check, uncomment it and try dragging an item — the cursor will look like it's selecting text.
               handleDrag(e, data);
             }}
             onStop={(e, data) => {
               onDragStop(e, data);
-              const id = data.node.id;
-              const dragElement = document.getElementById(id);
+              const dragElement = document.getElementById(data.node.id);
+              if (!dragElement) return;
 
-              if (dragElement) dragElement.style.cursor = 'grab';
+              dragElement.style.cursor = 'grab';
 
               // remove active styles
-              if (itemActiveStyle && dragElement)
+              if (itemActiveStyle)
                 Object.keys(itemActiveStyle).forEach((key) => {
                   const value = itemStyle
                     ? itemStyle[key as keyof CSSProperties]
@@ -112,7 +110,7 @@ export default function BoardList({
                   );
                 });
 
-              const { x, y } = data;
+              // const { x, y } = data;
             }}
           >
             <li
