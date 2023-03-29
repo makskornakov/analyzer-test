@@ -1,6 +1,7 @@
 import { BoardListContent, Position } from './Board';
 import Draggable from 'react-draggable';
 import type { CSSProperties } from 'styled-components';
+import { LiContainer } from './Board.styled';
 
 interface BoardListProps {
   id: string;
@@ -39,75 +40,16 @@ export default function BoardList({
   onDragStart,
   onDragStop,
 }: BoardListProps) {
-  // add margin to the placeholder element
-  // useEffect(() => {
-  //   // set initial styles to all items but skip the placeholder item and the item that is being dragged
-  //   boardList.forEach((item) => {
-  //     if (item.id.toString() === placeholder?.id) return;
-  //     if (item.id.toString() === dragItem) return;
-  //     const itemElement = document.getElementById(item.id.toString());
-  //     if (itemElement) {
-  //       // itemElement.style.transition = '0s';
-  //       itemElement.style.marginTop = '0px';
-  //       itemElement.style.marginBottom = '0px';
-  //       // setTimeout(() => {
-  //       //   itemElement.style.transition = '0.2s';
-  //       // }, 0);
-  //     }
-  //   });
-
-  //   if (placeholder) {
-  //     const placeholderElement = document.getElementById(placeholder.id);
-  //     // if the placeholder is going to be the first item or the last item in the list dont multiply the gap by 2
-  //     // find the index of the placeholder in the boardList
-
-  //     const newArrToFindIndex = boardList.filter(
-  //       (item) => String(item.id) !== dragItem
-  //     );
-  //     console.log('newArrToFindIndex', newArrToFindIndex);
-  //     const placeholderIndexInNewArr = newArrToFindIndex.findIndex(
-  //       (item) => String(item.id) === placeholder.id
-  //     );
-  //     if (placeholderIndexInNewArr === -1) return;
-
-  //     console.log('placeholderIndexInNewArr', placeholderIndexInNewArr);
-  //     console.log('id', placeholder.id);
-
-  //     const space = `calc(${gap} + ${placeholder.height})`;
-  //     if (placeholderElement) {
-  //       // if (placeholder.instant) {
-  //       //   placeholderElement.style.transition = '0s';
-  //       // }
-  //       if (placeholder.above) {
-  //         placeholderElement.style.marginTop = space;
-  //       } else {
-  //         placeholderElement.style.marginBottom = space;
-  //       }
-  //       // setTimeout(() => {
-  //       //   placeholderElement.style.transition = '0.2s';
-  //       // }, 200);
-  //     }
-  //   }
-  // }, [placeholder, gap, boardList, dragItem]);
-
   return (
     <div>
       <h3>Board List</h3>
-      <div
+      <LiContainer
         id={id}
         style={{
           width: width,
-          // borderWidth: '2px',
-          // borderStyle: 'solid',
-          // borderColor: 'lightgray',
-          boxSizing: 'content-box',
-          // borderRadius: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          // userSelect: 'none',
           gap,
           padding: listPadding,
+
           transition: `${transitionDuration / 1000}s`,
 
           ...listStyle,
@@ -149,9 +91,6 @@ export default function BoardList({
             onDrag={(e, data) => {
               e.preventDefault(); //? This is a fix for the cursor in Safari. To check, uncomment it and try dragging an item — the cursor will look like it's selecting text.
               handleDrag(e, data);
-              // const parent = document.getElementById(id);
-              // if (!parent) return;
-              // parent.style.cursor = 'grabbing';
             }}
             onStop={(e, data) => {
               onDragStop(e, data);
@@ -175,14 +114,11 @@ export default function BoardList({
               const { x, y } = data;
             }}
           >
-            <div
+            <li
               id={item.id.toString()}
               style={{
                 width: width,
                 height: itemHeight,
-
-                userSelect: 'none',
-                cursor: 'grab',
 
                 transition: `${transitionDuration / 1000}s`,
 
@@ -190,10 +126,10 @@ export default function BoardList({
               }}
             >
               <h4>{item.title}</h4>
-            </div>
+            </li>
           </Draggable>
         ))}
-      </div>
+      </LiContainer>
     </div>
   );
 }

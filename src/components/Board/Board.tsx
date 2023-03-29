@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableEvent, DraggableData } from 'react-draggable';
 import type { CSSProperties } from 'styled-components';
+import { BoardListContainer } from './Board.styled';
 import BoardList from './BoardList';
 
 export interface BoardItem {
@@ -561,11 +562,6 @@ export default function Board({
       console.log('closestEdge', closestEdge);
 
       // if no placeholder but closest edge is found set placeholder above or below it
-      // const wrongBoardListInAction = placeholder?.id
-      //   ? Array.from(theYMap.keys()).includes(placeholder?.id)
-      //   : false;
-      // console.log('wrongBoardListInAction', wrongBoardListInAction);
-      // if ((!placeholder || !wrongBoardListInAction) && closestEdge.id) {
       if (!placeholder && closestEdge.id && !set) {
         const placeholderElement = document.getElementById(closestEdge.id);
         if (!placeholderElement) return;
@@ -605,6 +601,8 @@ export default function Board({
 
       setBoardListInAction(mostIntersectingBoardList);
 
+      // ? state is old but usePlaceholder is new
+      // This is to show placeholder instantly when drag starts
       const usePlaceholder = newPlaceholder || placeholder;
       const isAllRight = placeholderInActiveBoardList(
         usePlaceholder,
@@ -618,8 +616,6 @@ export default function Board({
         return;
       }
 
-      // ? state is old but usePlaceholder is new
-      // console.log('placeholder STATE', placeholder);
       if (!mostIntersectingBoardList) return;
       const boardListItems = boardContent.get(mostIntersectingBoardList);
       if (!boardListItems) return;
@@ -720,10 +716,10 @@ export default function Board({
     if (!placeholder && !boardListInAction) {
       const placeID = generateInitialPlaceholder(id, data.node.style.height);
 
-      const neededList = boardContent.get(boardListKey as string);
-      const filteredList = neededList?.filter(
-        (item) => item.id.toString() !== id
-      );
+      // const neededList = boardContent.get(boardListKey as string);
+      // const filteredList = neededList?.filter(
+      //   (item) => item.id.toString() !== id
+      // );
       // if (filteredList?.length === 0) //? this can be added back to prevent "last frame" animation of the list being "active" on item release out of list bounds. Idea: option "flash when back".
       setBoardListInAction(boardListKey as string);
 
@@ -787,7 +783,6 @@ export default function Board({
         return newBoardContent;
       });
 
-      // setDraggedItem(null);
       setBoardListInAction(null);
     } else if (placeholder) {
       // ? If placeholder is not null and the board list in action is the same as placeholders list
@@ -816,6 +811,7 @@ export default function Board({
         return;
       }
       // ? Only instant if there is change in the list
+      // Needed when dropped at the top of the list to prevent the item from lagging
       moveInstantly(id);
 
       updateBoardOrder(
@@ -839,18 +835,7 @@ export default function Board({
   return (
     <>
       <h2>Board</h2>
-      <div
-        ref={container}
-        style={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-evenly',
-          width: '70%',
-          height: '70%',
-          outline: '1px solid #f55500',
-        }}
-      >
+      <BoardListContainer ref={container} style={{}}>
         {Array.from(boardContent.keys()).map((key) => (
           <BoardList
             key={key}
@@ -872,7 +857,7 @@ export default function Board({
             onDragStop={onDragStop}
           />
         ))}
-      </div>
+      </BoardListContainer>
     </>
   );
 }
