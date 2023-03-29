@@ -2,7 +2,7 @@ import type { BoardContent } from './Board';
 
 export const exampleBoardContent: BoardContent = new Map([
   [
-    'board1',
+    'list 1',
     [
       { id: 1, title: 'title1', content: 'content1' },
       { id: 2, title: 'title2', content: 'content2' },
@@ -14,7 +14,7 @@ export const exampleBoardContent: BoardContent = new Map([
     ],
   ],
   [
-    'board2',
+    'list 2',
     [
       { id: 8, title: 'title8', content: 'content8' },
       { id: 9, title: 'title9', content: 'content9' },
@@ -25,5 +25,5 @@ export const exampleBoardContent: BoardContent = new Map([
       // { id: 14, title: 'title14', content: 'content14' },
     ],
   ],
-  ['board3', [{ id: 15, title: 'title15', content: 'content15' }]],
+  ['list 3', [{ id: 15, title: 'title15', content: 'content15' }]],
 ]);

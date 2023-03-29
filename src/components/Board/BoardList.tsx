@@ -40,9 +40,10 @@ export default function BoardList({
   onDragStart,
   onDragStop,
 }: BoardListProps) {
+  const listId = id.charAt(0).toUpperCase() + id.slice(1);
   return (
     <div>
-      <h3>Board List</h3>
+      <h3>{listId}</h3>
       <LiContainer
         id={id}
         style={{
