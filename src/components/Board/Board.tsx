@@ -766,7 +766,7 @@ export default function Board({
   }
 
   return (
-    <>
+    <div>
       <h2>Board</h2>
       <BoardListContainer ref={container} style={{}}>
         {Array.from(boardContent.keys()).map((key) => (
@@ -793,6 +793,6 @@ export default function Board({
           />
         ))}
       </BoardListContainer>
-    </>
+    </div>
   );
 }

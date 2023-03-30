@@ -6,7 +6,7 @@ export const BoardListContainer = styled.div`
   flex-direction: row;
   justify-content: space-evenly;
   width: 100%;
-  height: 100%;
+  height: 80%;
 `;
 
 export const LiContainer = styled.ul<{ listStyle?: CSSObject; listActiveStyle?: CSSObject }>`

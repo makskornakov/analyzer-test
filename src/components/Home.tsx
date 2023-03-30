@@ -131,9 +131,12 @@ export default function HomeWrapper({
       <InnerWrapper ref={SettingSection}>
         <div
           style={{
-            width: '70%',
+            width: '85%',
             height: '80%',
-            outline: '1px solid #f55500',
+            borderTop: '2px dashed #f55500',
+            borderBottom: '2px dashed #f55500',
+            overflowY: 'scroll',
+            paddingBottom: '1.5em',
           }}
         >
           <Board

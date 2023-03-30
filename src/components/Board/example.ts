@@ -23,9 +23,16 @@ export const exampleCalculator: BoardContent = new Map([
   [
     'Take keys',
     [
-      { id: 1, title: 'X', content: '200' },
-      { id: 2, title: 'Variable1', content: '29' },
-      { id: 3, title: 'Yb', content: '1500' },
+      { id: 1, title: 'X', content: '200.35' },
+      { id: 2, title: 'Y', content: '29' },
+      { id: 3, title: 'A1', content: '1500.2' },
+
+      // * Uncomment to test with more variables, to see scroll
+      // { id: 8, title: 'A2', content: '0.17' },
+      // { id: 9, title: 'B1', content: '8' },
+      // { id: 10, title: 'B2', content: '0.5' },
+      // { id: 11, title: 'C1', content: '39100' },
+      // { id: 12, title: 'Other', content: '120' },
     ],
   ],
   ['Calculate', []],
