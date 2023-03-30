@@ -4,15 +4,45 @@ import HeaderWrapper from '@/components/Header';
 import { Upload } from '@/components/Uploader';
 import FooterWrap from './Footer';
 import SettingsSection from './SettingsSection';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board, { BoardItem } from './Board/Board';
-import { exampleBoardContent, exampleCalculator } from './Board/example';
+import {
+  // exampleBoardContent,
+  exampleCalculator,
+} from './Board/example';
 import type { BoardContent } from './Board/Board';
+import { calculateExact } from '@/helpers/calculateExact';
 
 interface UploadedFile {
   data: Object[];
 }
+const calculateListResult = function (list: BoardItem[]) {
+  let listString = '';
+  let errorFound = false;
+
+  list.map((item) => {
+    const prev = list[list.indexOf(item) - 1];
+
+    if (item.content) {
+      listString += ` ${Number(item.content)}`;
+      if (prev && prev.content) errorFound = true;
+    } else {
+      listString += ` ${item.title}`;
+      if (prev && !prev.content) errorFound = true;
+    }
+  });
+
+  if (list.length < 3 || errorFound) return listString;
+
+  try {
+    const result = calculateExact(listString);
+    return result;
+  } catch (e) {
+    console.log(e);
+    return listString;
+  }
+};
 
 export default function HomeWrapper({
   theme,
@@ -22,7 +52,7 @@ export default function HomeWrapper({
   setTheme: (newTheme: keyof typeof themeMap) => void;
 }) {
   const [json, setJson] = useState<UploadedFile | null>(productsJson);
-  const [calcRes, setCalcRes] = useState<number | null>(null);
+  const [calcRes, setCalcRes] = useState<number | string | null>(null);
   const [boardContent, setBoardContent] = useState<BoardContent>(exampleCalculator);
 
   const SettingSection = useRef<HTMLDivElement>(null);
@@ -35,6 +65,15 @@ export default function HomeWrapper({
       });
     }
   };
+
+  useEffect(() => {
+    if (boardContent) {
+      const list = boardContent.get('Calculate');
+      if (list) {
+        setCalcRes(calculateListResult(list));
+      }
+    }
+  }, [boardContent]);
 
   // interface calcArray {
   //   [key: string]: number | null;
