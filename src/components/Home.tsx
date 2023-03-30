@@ -29,7 +29,7 @@ const calculateListResult = function (list: BoardItem[]) {
       if (prev && prev.content) errorFound = true;
     } else {
       listString += ` ${item.title}`;
-      if (prev && !prev.content) errorFound = true;
+      if (!prev?.content) errorFound = true;
     }
   });
 
@@ -37,7 +37,7 @@ const calculateListResult = function (list: BoardItem[]) {
 
   try {
     const result = calculateExact(listString);
-    return result;
+    return Math.round(result * 100000) / 100000;
   } catch (e) {
     console.log(e);
     return listString;
