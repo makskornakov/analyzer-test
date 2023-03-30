@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board from './Board/Board';
 import { exampleBoardContent, exampleCalculator } from './Board/example';
+import type { BoardContent } from './Board/Board';
 
 interface UploadedFile {
   data: Object[];
@@ -21,6 +22,8 @@ export default function HomeWrapper({
   setTheme: (newTheme: keyof typeof themeMap) => void;
 }) {
   const [json, setJson] = useState<UploadedFile | null>(productsJson);
+  const [calcRes, setCalcRes] = useState<number | null>(null);
+  const [boardContent, setBoardContent] = useState<BoardContent>(exampleCalculator);
 
   const SettingSection = useRef<HTMLDivElement>(null);
 
@@ -32,6 +35,10 @@ export default function HomeWrapper({
       });
     }
   };
+
+  // interface calcArray {
+  //   [key: string]: number | null;
+  // }
 
   return (
     <HomeContainer>
@@ -91,7 +98,8 @@ export default function HomeWrapper({
           }}
         >
           <Board
-            initialBoardContent={exampleCalculator}
+            initialBoardContent={boardContent}
+            setNewBoardContent={setBoardContent}
             listWidth={'250px'}
             itemHeight={'3em'}
             itemGap={'1em'}
@@ -119,6 +127,7 @@ export default function HomeWrapper({
             }}
           />
         </div>
+        <p>{calcRes ? `Result: ${calcRes}` : 'No result yet'}</p>
       </InnerWrapper>
       <InnerWrapper>
         <h2>Clusters on the Canvas</h2>

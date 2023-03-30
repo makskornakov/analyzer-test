@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DraggableData, DraggableEvent } from 'react-draggable';
 
 import { BoardListContainer } from './Board.styled';
@@ -68,6 +68,7 @@ interface BoardProps {
   itemActiveStyle?: CSSObject;
   listActiveStyle?: CSSObject;
   transitionDuration?: number;
+  setNewBoardContent?: React.Dispatch<React.SetStateAction<BoardContent>>;
 }
 
 export default function Board({
@@ -81,9 +82,14 @@ export default function Board({
   itemActiveStyle,
   listActiveStyle,
   transitionDuration = 200,
+  setNewBoardContent,
 }: BoardProps) {
   const container = useRef<HTMLDivElement>(null);
-  const [boardContent, setBoardContent] = useState<BoardContent>(initialBoardContent);
+  const [boardContentLocal, setBoardContentLocal] = useState<BoardContent>(initialBoardContent);
+
+  const boardContent = useMemo(() => {
+    return setNewBoardContent ? initialBoardContent : boardContentLocal;
+  }, [initialBoardContent, setNewBoardContent, boardContentLocal]);
 
   const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(new Map());
 
@@ -270,6 +276,24 @@ export default function Board({
     y3?: number;
   }
 
+  type changeBoards = Map<string, BoardItem[]>;
+
+  const setBoardStateFunc = useCallback(
+    (changeBoards: changeBoards) => {
+      // console.log('setBoardStateFunc called');
+
+      const setFunc = function (prev: Map<string, BoardItem[]>, changeBoards: changeBoards) {
+        const newBoardContent = new Map(prev);
+        changeBoards.forEach((value, key) => {
+          newBoardContent.set(key, value);
+        });
+        return newBoardContent;
+      };
+      (setNewBoardContent ?? setBoardContentLocal)((prev) => setFunc(prev, changeBoards));
+    },
+    [setBoardContentLocal, setNewBoardContent],
+  );
+
   const updateBoardOrder = useCallback(
     (dragged: string, placeholder: Placeholder, boardList: string) => {
       console.log('updateBoardOrder called');
@@ -296,11 +320,7 @@ export default function Board({
         } else {
           theBoardList.splice(placeholderIndex + 1, 0, draggedItem);
         }
-        setBoardContent((prev) => {
-          const newBoardContent = new Map(prev);
-          newBoardContent.set(boardList, theBoardList);
-          return newBoardContent;
-        });
+        setBoardStateFunc(new Map([[boardList, theBoardList]]));
       } else {
         const draggedItemBoardList = [
           ...(boardContent.get(draggedItemBoardListName) as BoardItem[]),
@@ -323,12 +343,12 @@ export default function Board({
         draggedItemBoardList.splice(draggedItemIndex, 1);
 
         placeHolderBoardList.splice(placeholderIndex + (placeholder.above ? 0 : 1), 0, draggedItem);
-        setBoardContent((prev) => {
-          const newBoardContent = new Map(prev);
-          newBoardContent.set(boardList, placeHolderBoardList);
-          newBoardContent.set(draggedItemBoardListName, draggedItemBoardList);
-          return newBoardContent;
-        });
+        setBoardStateFunc(
+          new Map([
+            [boardList, placeHolderBoardList],
+            [draggedItemBoardListName, draggedItemBoardList],
+          ]),
+        );
       }
       // updateItemPositions();
       // getBoardPositions();
@@ -338,7 +358,7 @@ export default function Board({
 
       // setDraggedItem(null);
     },
-    [boardContent],
+    [boardContent, setBoardStateFunc],
   );
 
   const [itemInTransition, setItemInTransition] = useState<string | null>(null);
@@ -693,12 +713,12 @@ export default function Board({
 
       dragElement.style.position = 'initial';
 
-      setBoardContent((prev) => {
-        const newBoardContent = new Map(prev);
-        newBoardContent.set(boardListInAction as string, newBoardListItems);
-        newBoardContent.set(boardListKey as string, newDraggedItemList);
-        return newBoardContent;
-      });
+      setBoardStateFunc(
+        new Map([
+          [boardListInAction as string, newBoardListItems],
+          [boardListKey as string, newDraggedItemList],
+        ]),
+      );
 
       setBoardListInAction(null);
     } else if (placeholder) {
