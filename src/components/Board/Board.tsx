@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DraggableEvent, DraggableData } from 'react-draggable';
-import type { CSSProperties } from 'styled-components';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { DraggableData, DraggableEvent } from 'react-draggable';
+
 import { BoardListContainer } from './Board.styled';
 import BoardList from './BoardList';
+
+import type { CSSObject } from 'styled-components';
 
 export interface BoardItem {
   id: number;
@@ -61,10 +63,10 @@ interface BoardProps {
   itemHeight: string;
   itemGap: string;
   listPadding?: string;
-  itemStyle?: React.CSSProperties;
-  listStyle?: React.CSSProperties;
-  itemActiveStyle?: React.CSSProperties;
-  listActiveStyle?: React.CSSProperties;
+  itemStyle?: CSSObject;
+  listStyle?: CSSObject;
+  itemActiveStyle?: CSSObject;
+  listActiveStyle?: CSSObject;
   transitionDuration?: number;
 }
 
@@ -81,22 +83,15 @@ export default function Board({
   transitionDuration = 200,
 }: BoardProps) {
   const container = useRef<HTMLDivElement>(null);
-  const [boardContent, setBoardContent] =
-    useState<BoardContent>(initialBoardContent);
+  const [boardContent, setBoardContent] = useState<BoardContent>(initialBoardContent);
 
-  const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(
-    new Map()
-  );
+  const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(new Map());
 
-  const [itemPositions, setItemPositions] = useState<Map<string, Position>>(
-    new Map()
-  );
+  const [itemPositions, setItemPositions] = useState<Map<string, Position>>(new Map());
 
   const [placeholder, setPlaceholder] = useState<Placeholder | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [boardListInAction, setBoardListInAction] = useState<string | null>(
-    null
-  );
+  const [boardListInAction, setBoardListInAction] = useState<string | null>(null);
 
   const getBoardPositions = useCallback(() => {
     const boardPositions = new Map();
@@ -125,10 +120,7 @@ export default function Board({
           boardListContent.forEach((item) => {
             const itemElement = document.getElementById(item.id.toString());
             if (itemElement && excludeItem !== item.id.toString()) {
-              const rect = getRect(
-                itemElement,
-                container.current as HTMLDivElement
-              );
+              const rect = getRect(itemElement, container.current as HTMLDivElement);
               itemPositions.set(item.id.toString(), rect);
             }
           });
@@ -136,7 +128,7 @@ export default function Board({
         return itemPositions;
       });
     },
-    [boardContent]
+    [boardContent],
   );
 
   useEffect(() => {
@@ -157,15 +149,13 @@ export default function Board({
 
   const findTheMostIntersectingBoardList = useCallback(
     // ? can be redone to be more efficient
+
     (currentPosition: Position) => {
       console.log('findTheMostIntersectingBoardList function called');
       let mostIntersectingBoardList: string | null = null;
       let mostIntersectingPercentage = 0;
       boardPositions.forEach((rect, key) => {
-        const intersectionPercentage = getIntersectionPercentage(
-          currentPosition,
-          rect
-        );
+        const intersectionPercentage = getIntersectionPercentage(currentPosition, rect);
         if (intersectionPercentage > mostIntersectingPercentage) {
           mostIntersectingBoardList = key;
           mostIntersectingPercentage = intersectionPercentage;
@@ -176,7 +166,7 @@ export default function Board({
         ? mostIntersectingBoardList
         : null;
     },
-    [boardPositions]
+    [boardPositions],
   );
 
   const placeholderInActiveBoardList = useCallback(
@@ -184,11 +174,9 @@ export default function Board({
       if (!placeholder) return false;
       const activeBoardList = boardContent.get(boardListInAction as string);
       if (!activeBoardList) return false;
-      return activeBoardList.some(
-        (item) => item.id.toString() === placeholder.id
-      );
+      return activeBoardList.some((item) => item.id.toString() === placeholder.id);
     },
-    [boardContent]
+    [boardContent],
   );
 
   // ?? REDO LATER
@@ -196,13 +184,7 @@ export default function Board({
     Array.from(boardContent.keys()).forEach((key) => {
       const boardList = document.getElementById(key);
       if (boardList) {
-        if (listActiveStyle)
-          Object.keys(listActiveStyle).forEach((key) => {
-            const value = listStyle
-              ? listStyle[key as keyof CSSProperties]
-              : '';
-            boardList.style.setProperty(key, value ? (value as string) : '');
-          });
+        boardList.classList.remove('active');
         boardList.style.padding = listPadding;
       }
     });
@@ -212,34 +194,20 @@ export default function Board({
       console.log('activeList', activeList);
       // activelist filter draggedItem
       if (activeList) {
-        const cleanActiveList = activeList?.filter(
-          (item) => item.id.toString() !== draggedItem
-        );
+        const cleanActiveList = activeList?.filter((item) => item.id.toString() !== draggedItem);
         //! if empty board list and no placeholder generate general placeholder
         if (cleanActiveList?.length < 1) {
-          const draggedItemElement = document.getElementById(
-            draggedItem as string
-          );
+          const draggedItemElement = document.getElementById(draggedItem as string);
           if (boardList) {
             boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + ${listPadding})`;
           }
         }
       }
-      if (boardList && listActiveStyle) {
-        Object.keys(listActiveStyle).forEach((key) => {
-          const value = listActiveStyle[key as keyof CSSProperties];
-          boardList.style.setProperty(key, value as string);
-        });
+      if (boardList) {
+        boardList.classList.add('active');
       }
     }
-  }, [
-    boardListInAction,
-    boardContent,
-    draggedItem,
-    listPadding,
-    listActiveStyle,
-    listStyle,
-  ]);
+  }, [boardListInAction, boardContent, draggedItem, listPadding, listActiveStyle, listStyle]);
 
   const moveInstantly = useCallback(
     (id: string) => {
@@ -252,15 +220,11 @@ export default function Board({
         }, 0);
       }
     },
-    [transitionDuration]
+    [transitionDuration],
   );
 
   const applyAndSetPlaceholder = useCallback(
-    (
-      placeholder: Placeholder | null,
-      instant?: boolean,
-      newDraggedItem?: string
-    ) => {
+    (placeholder: Placeholder | null, instant?: boolean, newDraggedItem?: string) => {
       const useDraggedItem = newDraggedItem || draggedItem;
       console.log('applyAndSetPlaceholder called');
       console.log('draggedItem', useDraggedItem);
@@ -296,7 +260,7 @@ export default function Board({
       itemGap,
       updateItemPositions,
       getBoardPositions,
-    ]
+    ],
   );
 
   interface YPosWithPlaceholder {
@@ -310,9 +274,8 @@ export default function Board({
     (dragged: string, placeholder: Placeholder, boardList: string) => {
       console.log('updateBoardOrder called');
       // get the boardList of the dragged item
-      const draggedItemBoardListName = Array.from(boardContent.keys()).find(
-        (key) =>
-          boardContent.get(key)?.find((item) => String(item.id) === dragged)
+      const draggedItemBoardListName = Array.from(boardContent.keys()).find((key) =>
+        boardContent.get(key)?.find((item) => String(item.id) === dragged),
       );
       if (!draggedItemBoardListName) return;
 
@@ -321,14 +284,12 @@ export default function Board({
       if (sameBoardList) {
         const theBoardList = boardContent.get(boardList);
         if (!theBoardList) return;
-        const draggedItemIndex = theBoardList.findIndex(
-          (item) => String(item.id) === dragged
-        );
+        const draggedItemIndex = theBoardList.findIndex((item) => String(item.id) === dragged);
         const draggedItem = theBoardList[draggedItemIndex];
         // remove the dragged item from the boardList
         theBoardList.splice(draggedItemIndex, 1);
         const placeholderIndex = theBoardList.findIndex(
-          (item) => String(item.id) === placeholder.id
+          (item) => String(item.id) === placeholder.id,
         );
         if (placeholder.above) {
           theBoardList.splice(placeholderIndex, 0, draggedItem);
@@ -344,18 +305,16 @@ export default function Board({
         const draggedItemBoardList = [
           ...(boardContent.get(draggedItemBoardListName) as BoardItem[]),
         ];
-        const placeHolderBoardList = [
-          ...(boardContent.get(boardList) as BoardItem[]),
-        ];
+        const placeHolderBoardList = [...(boardContent.get(boardList) as BoardItem[])];
         if (!draggedItemBoardList || !placeHolderBoardList) return;
 
         // get the index of the dragged item
         const draggedItemIndex = draggedItemBoardList.findIndex(
-          (item) => String(item.id) === dragged
+          (item) => String(item.id) === dragged,
         );
         // get the index of the placeholder
         const placeholderIndex = placeHolderBoardList.findIndex(
-          (item) => String(item.id) === placeholder?.id
+          (item) => String(item.id) === placeholder?.id,
         );
         if (draggedItemIndex === -1 || placeholderIndex === -1) return;
         // save the dragged item
@@ -363,11 +322,7 @@ export default function Board({
         // remove the dragged item from the boardList
         draggedItemBoardList.splice(draggedItemIndex, 1);
 
-        placeHolderBoardList.splice(
-          placeholderIndex + (placeholder.above ? 0 : 1),
-          0,
-          draggedItem
-        );
+        placeHolderBoardList.splice(placeholderIndex + (placeholder.above ? 0 : 1), 0, draggedItem);
         setBoardContent((prev) => {
           const newBoardContent = new Map(prev);
           newBoardContent.set(boardList, placeHolderBoardList);
@@ -383,7 +338,7 @@ export default function Board({
 
       // setDraggedItem(null);
     },
-    [boardContent]
+    [boardContent],
   );
 
   const [itemInTransition, setItemInTransition] = useState<string | null>(null);
@@ -403,7 +358,7 @@ export default function Board({
       currentPosition: Position,
       boardList: string | null,
       placeholder: Placeholder | null,
-      itemPositions: Map<string, Position>
+      itemPositions: Map<string, Position>,
     ) => {
       console.log('checkOnDrag called');
       // console.log('currentPosition', currentPosition);
@@ -444,19 +399,14 @@ export default function Board({
       const { y1, y2 } = currentPosition;
       const centerY = (y1 + y2) / 2;
 
-      const topY = Math.min(
-        ...Array.from(theYMap.values()).map((v) => v.y0 || v.y1)
-      );
-      const bottomY = Math.max(
-        ...Array.from(theYMap.values()).map((v) => v.y3 || v.y2)
-      );
+      const topY = Math.min(...Array.from(theYMap.values()).map((v) => v.y0 || v.y1));
+      const bottomY = Math.max(...Array.from(theYMap.values()).map((v) => v.y3 || v.y2));
 
       // console.log('topY', topY);
       // console.log('bottomY', bottomY);
 
       const useLine = centerY < topY ? y2 : centerY > bottomY ? y1 : centerY;
-      const useLineName =
-        useLine === y1 ? 'top' : useLine === y2 ? 'bottom' : 'center';
+      const useLineName = useLine === y1 ? 'top' : useLine === y2 ? 'bottom' : 'center';
       console.log('useLine', useLineName);
 
       // now we go through the map and check if the useLine is between y0 and y1 of the item except the placeholder item
@@ -525,15 +475,10 @@ export default function Board({
         ) {
           // when the dragged item touches the placeholder its time to move the intersected item to the other side since there is more space
           const timeToChangePlaceholderSide = placeholder?.above
-            ? useLine > y1 + sensitivityPixels &&
-              useLine < y2 - sensitivityPixels
-            : useLine < y2 - sensitivityPixels &&
-              useLine > y1 + sensitivityPixels;
+            ? useLine > y1 + sensitivityPixels && useLine < y2 - sensitivityPixels
+            : useLine < y2 - sensitivityPixels && useLine > y1 + sensitivityPixels;
 
-          console.log(
-            'timeToChangePlaceholderSide',
-            timeToChangePlaceholderSide
-          );
+          console.log('timeToChangePlaceholderSide', timeToChangePlaceholderSide);
           // console.log('itemInTransition', itemInTransition);
           // change placeholders side
           if (timeToChangePlaceholderSide) {
@@ -565,15 +510,13 @@ export default function Board({
           cords: theYMap.get(closestEdge.id) as YPosWithPlaceholder,
         };
         console.log(
-          `applying placeholder ${closestEdge.above ? 'above' : 'below'} ${
-            closestEdge.id
-          }`
+          `applying placeholder ${closestEdge.above ? 'above' : 'below'} ${closestEdge.id}`,
         );
         setItemInTransition(closestEdge.id);
         applyAndSetPlaceholder(placeholderObj);
       }
     },
-    [applyAndSetPlaceholder, itemInTransition]
+    [applyAndSetPlaceholder, itemInTransition],
   );
 
   const handleDrag = useCallback(
@@ -589,18 +532,14 @@ export default function Board({
         y2: initialPosition.y2 + y,
       };
 
-      const mostIntersectingBoardList =
-        findTheMostIntersectingBoardList(currentPosition);
+      const mostIntersectingBoardList = findTheMostIntersectingBoardList(currentPosition);
 
       setBoardListInAction(mostIntersectingBoardList);
 
       // ? state is old but usePlaceholder is new
       // This is to show placeholder instantly when drag starts
       const usePlaceholder = newPlaceholder || placeholder;
-      const isAllRight = placeholderInActiveBoardList(
-        usePlaceholder,
-        mostIntersectingBoardList
-      );
+      const isAllRight = placeholderInActiveBoardList(usePlaceholder, mostIntersectingBoardList);
       if ((!mostIntersectingBoardList || !isAllRight) && usePlaceholder) {
         applyAndSetPlaceholder(null);
         setTimeout(() => {
@@ -615,20 +554,17 @@ export default function Board({
 
       const activeBoardListItemPositions = new Map(
         Array.from(itemPositions).filter(
-          ([theId]) =>
-            boardListItems.some((item) => `${item.id}` === theId) &&
-            theId !== id
-        )
+          ([theId]) => boardListItems.some((item) => `${item.id}` === theId) && theId !== id,
+        ),
       );
-      if (activeBoardListItemPositions.size < 1)
-        moveInstantly(mostIntersectingBoardList);
+      if (activeBoardListItemPositions.size < 1) moveInstantly(mostIntersectingBoardList);
 
       checkOnDrag(
         // id,
         currentPosition,
         mostIntersectingBoardList,
         usePlaceholder,
-        activeBoardListItemPositions
+        activeBoardListItemPositions,
       );
     },
     [
@@ -642,13 +578,13 @@ export default function Board({
       applyAndSetPlaceholder,
       transitionDuration,
       getBoardPositions,
-    ]
+    ],
   );
 
   function generateInitialPlaceholder(
     id: string,
     height: string,
-    fast?: boolean
+    fast?: boolean,
   ): Placeholder | undefined {
     const boardListKey = Array.from(boardContent.keys()).find((key) => {
       const boardListContent = boardContent.get(key) as BoardListContent;
@@ -657,12 +593,8 @@ export default function Board({
     if (boardListKey) {
       // if item is the first one set placeholder above the next item in the list
       // else set placeholder below the previous item in the list
-      const boardListContent = boardContent.get(
-        boardListKey
-      ) as BoardListContent;
-      const itemIndex = boardListContent.findIndex(
-        (item) => item.id.toString() === id
-      );
+      const boardListContent = boardContent.get(boardListKey) as BoardListContent;
+      const itemIndex = boardListContent.findIndex((item) => item.id.toString() === id);
 
       if (boardListContent.length < 2) return;
       const isFirstChild = itemIndex === 0;
@@ -719,9 +651,7 @@ export default function Board({
       setTimeout(() => {
         dragElement.style.position = 'initial';
 
-        const boardListElement = document.getElementById(
-          boardListKey as string
-        );
+        const boardListElement = document.getElementById(boardListKey as string);
         moveInstantly(boardListKey as string);
         if (boardListElement) boardListElement.style.padding = listPadding;
         // ? IF the code below is commented out the placeholder will lag on fast drag out and drag stop
@@ -748,22 +678,16 @@ export default function Board({
       const draggedItemList = boardContent.get(boardListKey as string);
       if (!draggedItemList) return;
 
-      const draggedItem = draggedItemList.find(
-        (item) => item.id.toString() === id
-      );
+      const draggedItem = draggedItemList.find((item) => item.id.toString() === id);
       if (!draggedItem) return;
 
       // remove the dragged item from the old list
-      const newDraggedItemList = draggedItemList.filter(
-        (item) => item.id.toString() !== id
-      );
+      const newDraggedItemList = draggedItemList.filter((item) => item.id.toString() !== id);
       // add the dragged item to the new list
       const newBoardListItems = [...boardListItems, draggedItem];
 
       // update the board content
-      const boardListElement = document.getElementById(
-        boardListInAction as string
-      );
+      const boardListElement = document.getElementById(boardListInAction as string);
       moveInstantly(boardListInAction as string);
       if (boardListElement) boardListElement.style.padding = listPadding;
 
@@ -785,21 +709,11 @@ export default function Board({
       setBoardListInAction(null);
       const theList = boardContent.get(boardListInAction as string);
       if (!theList) return;
-      const placeholderIndex = theList.findIndex(
-        (item) => item.id.toString() === placeholder?.id
-      );
-      const draggedItemIndex = theList.findIndex(
-        (item) => item.id.toString() === id
-      );
-      const calcItem = placeholder.above
-        ? placeholderIndex - 1
-        : placeholderIndex + 1;
+      const placeholderIndex = theList.findIndex((item) => item.id.toString() === placeholder?.id);
+      const draggedItemIndex = theList.findIndex((item) => item.id.toString() === id);
+      const calcItem = placeholder.above ? placeholderIndex - 1 : placeholderIndex + 1;
 
-      if (
-        calcItem === draggedItemIndex &&
-        placeholderIndex !== -1 &&
-        draggedItemIndex !== -1
-      ) {
+      if (calcItem === draggedItemIndex && placeholderIndex !== -1 && draggedItemIndex !== -1) {
         console.log('no need to update');
         return;
       }
@@ -807,11 +721,7 @@ export default function Board({
       // Needed when dropped at the top of the list to prevent the item from lagging
       moveInstantly(id);
 
-      updateBoardOrder(
-        id,
-        placeholder as Placeholder,
-        boardListInAction as string
-      );
+      updateBoardOrder(id, placeholder as Placeholder, boardListInAction as string);
     } else {
       dragElement.style.position = 'initial';
       // ? has to be instant to prevent the placeholder from lagging on click and stop
@@ -842,6 +752,7 @@ export default function Board({
             gap={itemGap}
             itemStyle={itemStyle}
             listStyle={listStyle}
+            listActiveStyle={listActiveStyle}
             itemActiveStyle={itemActiveStyle}
             listPadding={listPadding}
             transitionDuration={transitionDuration}

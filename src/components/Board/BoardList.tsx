@@ -1,7 +1,8 @@
-import { BoardListContent, Position } from './Board';
 import Draggable from 'react-draggable';
-import type { CSSProperties } from 'styled-components';
-import { LiContainer } from './Board.styled';
+import { CSSObject } from 'styled-components';
+
+import { BoardListContent, Position } from './Board';
+import { LiContainer, ListItem } from './Board.styled';
 
 interface BoardListProps {
   id: string;
@@ -14,9 +15,10 @@ interface BoardListProps {
   gap: string;
   listPadding: string;
   transitionDuration: number;
-  itemStyle?: React.CSSProperties;
-  listStyle?: React.CSSProperties;
-  itemActiveStyle?: React.CSSProperties;
+  itemStyle: CSSObject | undefined;
+  listStyle: CSSObject | undefined;
+  listActiveStyle: CSSObject | undefined;
+  itemActiveStyle: CSSObject | undefined;
   handleDrag: (e: any, data: any) => void;
   onDragStart: (e: any, data: any) => void;
   onDragStop: (e: any, data: any) => void;
@@ -33,6 +35,7 @@ export default function BoardList({
   gap,
   itemStyle,
   listStyle,
+  listActiveStyle,
   itemActiveStyle,
   listPadding,
   transitionDuration,
@@ -45,6 +48,8 @@ export default function BoardList({
     <div>
       <h3>{listId}</h3>
       <LiContainer
+        listStyle={listStyle}
+        listActiveStyle={listActiveStyle}
         id={id}
         style={{
           width: width,
@@ -52,8 +57,6 @@ export default function BoardList({
           padding: listPadding,
 
           transition: `${transitionDuration}ms`,
-
-          ...listStyle,
         }}
       >
         {boardList.map((item) => (
@@ -71,18 +74,10 @@ export default function BoardList({
                 if (!dragElement) return;
                 onDragStart(e, data);
 
-                // apply active styles
-                if (itemActiveStyle)
-                  Object.keys(itemActiveStyle).forEach((key) => {
-                    const value = itemActiveStyle[key as keyof CSSProperties];
-                    dragElement.style.setProperty(key, value as string);
-                  });
-
                 dragElement.style.position = 'absolute';
                 dragElement.style.top = initialPosition.y1 + 'px';
                 dragElement.style.left = initialPosition.x1 + 'px';
                 dragElement.style.zIndex = '2';
-                dragElement.style.cursor = 'grabbing';
                 dragElement.style.transition = 'none';
               }
               // handleDrag(e, data);
@@ -96,36 +91,36 @@ export default function BoardList({
               const dragElement = document.getElementById(data.node.id);
               if (!dragElement) return;
 
-              dragElement.style.cursor = 'grab';
+              const { x, y } = data;
 
-              // remove active styles
-              if (itemActiveStyle)
-                Object.keys(itemActiveStyle).forEach((key) => {
-                  const value = itemStyle
-                    ? itemStyle[key as keyof CSSProperties]
-                    : '';
-                  dragElement.style.setProperty(
-                    key,
-                    value ? (value as string) : ''
-                  );
-                });
-
-              // const { x, y } = data;
+              //#region force cursor update on drag stop in safari
+              if (navigator.userAgent.includes('Safari')) {
+                /** approximate dead-band value (px) for mousemove not to update cursor */
+                const deadBand = 5;
+                // no enforcement if position hasn't changed
+                if (Math.abs(x) + Math.abs(y) > deadBand) {
+                  dragElement.style.cursor = 'initial';
+                  setTimeout(() => {
+                    dragElement.style.cursor = 'grab';
+                  }, transitionDuration);
+                }
+              }
+              //#endregion
             }}
           >
-            <li
+            <ListItem
+              itemStyle={itemStyle}
+              itemActiveStyle={itemActiveStyle}
               id={item.id.toString()}
               style={{
                 width: width,
                 height: itemHeight,
 
                 transition: `${transitionDuration}ms`,
-
-                ...itemStyle,
               }}
             >
               <h4>{item.title}</h4>
-            </li>
+            </ListItem>
           </Draggable>
         ))}
       </LiContainer>

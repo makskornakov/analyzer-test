@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css, CSSObject } from 'styled-components';
 
 export const BoardListContainer = styled.div`
   position: relative;
@@ -9,7 +9,7 @@ export const BoardListContainer = styled.div`
   height: 100%;
 `;
 
-export const LiContainer = styled.ul`
+export const LiContainer = styled.ul<{ listStyle?: CSSObject; listActiveStyle?: CSSObject }>`
   box-sizing: content-box;
   display: flex;
   flex-direction: column;
@@ -17,7 +17,28 @@ export const LiContainer = styled.ul`
   user-select: none;
   -webkit-user-select: none;
 
-  li {
-    cursor: grab;
-  }
+  ${({ listStyle, listActiveStyle }) => {
+    return css`
+      ${listStyle};
+
+      &.active {
+        ${listActiveStyle}
+      }
+    `;
+  }}
+`;
+
+export const ListItem = styled.li<{ itemStyle?: CSSObject; itemActiveStyle?: CSSObject }>`
+  ${({ itemStyle, itemActiveStyle }) => {
+    return css`
+      cursor: grab;
+
+      ${itemStyle};
+
+      &.react-draggable-dragging {
+        cursor: grabbing;
+        ${itemActiveStyle}
+      }
+    `;
+  }}
 `;
