@@ -1,7 +1,7 @@
 import Draggable from 'react-draggable';
 import { CSSObject } from 'styled-components';
 
-import { BoardListContent, Position } from './Board';
+import { BoardItem, BoardListContent, Position } from './Board';
 import { LiContainer, ListItem } from './Board.styled';
 
 interface BoardListProps {
@@ -22,6 +22,7 @@ interface BoardListProps {
   handleDrag: (e: any, data: any) => void;
   onDragStart: (e: any, data: any) => void;
   onDragStop: (e: any, data: any) => void;
+  ItemComponent: React.FC<{ item: BoardItem }>;
 }
 
 export default function BoardList({
@@ -42,6 +43,7 @@ export default function BoardList({
   handleDrag,
   onDragStart,
   onDragStop,
+  ItemComponent,
 }: BoardListProps) {
   const listId = id.charAt(0).toUpperCase() + id.slice(1);
   return (
@@ -119,12 +121,7 @@ export default function BoardList({
                 transition: `${transitionDuration}ms`,
               }}
             >
-              <h4>{item.title}</h4>
-              {item.content && (
-                <>
-                  =<p>{item.content}</p>
-                </>
-              )}
+              <ItemComponent item={item} />
             </ListItem>
           </Draggable>
         ))}

@@ -6,7 +6,7 @@ import FooterWrap from './Footer';
 import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
-import Board from './Board/Board';
+import Board, { BoardItem } from './Board/Board';
 import { exampleBoardContent, exampleCalculator } from './Board/example';
 import type { BoardContent } from './Board/Board';
 
@@ -125,6 +125,8 @@ export default function HomeWrapper({
               background: 'rgba(104, 61, 173, 0.15)',
               border: '1.5px solid #a5a5a5',
             }}
+            // ? Comment to see default component render
+            ItemComponent={ItemComponent}
           />
         </div>
         <p>{calcRes ? `Result: ${calcRes}` : 'No result yet'}</p>
@@ -142,5 +144,30 @@ export default function HomeWrapper({
       </InnerWrapper>
       <FooterWrap />
     </HomeContainer>
+  );
+}
+function ItemComponent({ item }: { item: BoardItem }) {
+  return (
+    <>
+      <h4>{item.title}</h4>
+      {item.content && (
+        <>
+          <span
+            style={{
+              color: '#b74000',
+            }}
+          >
+            =
+          </span>
+          <p
+            style={{
+              color: '#7a7a7a',
+            }}
+          >
+            {item.content}
+          </p>
+        </>
+      )}
+    </>
   );
 }

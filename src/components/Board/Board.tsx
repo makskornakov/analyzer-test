@@ -9,7 +9,7 @@ import type { CSSObject } from 'styled-components';
 export interface BoardItem {
   id: number;
   title: string;
-  content: string;
+  content: string | number | boolean | null;
 }
 export type BoardListContent = BoardItem[];
 export type BoardContent = Map<string, BoardListContent>;
@@ -45,6 +45,14 @@ function getRect(element: HTMLElement, container: HTMLElement): Position {
     y2: rect.y + rect.height - containerRect.y,
   };
 }
+function ExampleItemComponent({ item }: { item: BoardItem }) {
+  return (
+    <>
+      <h4>{item.title}</h4>
+      {item.content && <p>{item.content}</p>}
+    </>
+  );
+}
 
 function getIntersectionPercentage(rect: Position, refRect: Position) {
   // return the percentage of rect that is inside checkableRect
@@ -69,6 +77,7 @@ interface BoardProps {
   listActiveStyle?: CSSObject;
   transitionDuration?: number;
   setNewBoardContent?: React.Dispatch<React.SetStateAction<BoardContent>>;
+  ItemComponent?: React.FC<{ item: BoardItem }>;
 }
 
 export default function Board({
@@ -83,6 +92,7 @@ export default function Board({
   listActiveStyle,
   transitionDuration = 200,
   setNewBoardContent,
+  ItemComponent,
 }: BoardProps) {
   const container = useRef<HTMLDivElement>(null);
   const [boardContentLocal, setBoardContentLocal] = useState<BoardContent>(initialBoardContent);
@@ -779,6 +789,7 @@ export default function Board({
             handleDrag={handleDrag}
             onDragStart={onDragStart}
             onDragStop={onDragStop}
+            ItemComponent={ItemComponent ?? ExampleItemComponent}
           />
         ))}
       </BoardListContainer>
