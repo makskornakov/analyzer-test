@@ -120,6 +120,7 @@ export default function BoardList({
               }}
             >
               <h4>{item.title}</h4>
+              {item.content && <p>{item.content}</p>}
             </ListItem>
           </Draggable>
         ))}

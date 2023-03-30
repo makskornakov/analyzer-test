@@ -7,7 +7,7 @@ import SettingsSection from './SettingsSection';
 import { useRef, useState } from 'react';
 import productsJson from '../jsonExamples/products.json';
 import Board from './Board/Board';
-import { exampleBoardContent } from './Board/example';
+import { exampleBoardContent, exampleCalculator } from './Board/example';
 
 interface UploadedFile {
   data: Object[];
@@ -49,25 +49,25 @@ export default function HomeWrapper({
             <h2>Upload your data</h2>
             <h3>Description</h3>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
             </p>
           </div>
           <div className="leftBorder">
             <h2>How to use</h2>
             <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
               <br />
               <br />
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Similique recusandae voluptas earum! Fugiat, quos aut provident
-              aspernatur et veniam asperiores! Iusto necessitatibus distinctio
-              suscipit quod rerum reprehenderit voluptatem consectetur itaque?
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique recusandae
+              voluptas earum! Fugiat, quos aut provident aspernatur et veniam asperiores! Iusto
+              necessitatibus distinctio suscipit quod rerum reprehenderit voluptatem consectetur
+              itaque?
             </p>
           </div>
         </DoubleContainer>
@@ -91,7 +91,7 @@ export default function HomeWrapper({
           }}
         >
           <Board
-            initialBoardContent={exampleBoardContent}
+            initialBoardContent={exampleCalculator}
             listWidth={'250px'}
             itemHeight={'3em'}
             itemGap={'1em'}
@@ -102,6 +102,7 @@ export default function HomeWrapper({
               // border: '2px solid grey',
               background: '#252525',
               display: 'flex',
+              gap: '1em',
               justifyContent: 'center',
               alignItems: 'center',
             }}
