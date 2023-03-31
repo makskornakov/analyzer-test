@@ -105,7 +105,7 @@ export default function Board({
 
   const [itemPositions, setItemPositions] = useState<Map<string, Position>>(new Map());
 
-  const [placeholder, setPlaceholder] = useState<Placeholder | null>(null);
+  const [placeholder, setPlaceholder] = useState<Placeholder | string | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [boardListInAction, setBoardListInAction] = useState<string | null>(null);
 
@@ -163,6 +163,20 @@ export default function Board({
     console.log('boardPositions', boardPositions);
   }, [boardPositions]);
 
+  const moveInstantly = useCallback(
+    (id: string) => {
+      console.log('moveInstantly called');
+      const itemElement = document.getElementById(id);
+      if (itemElement) {
+        itemElement.style.transition = '0s';
+        setTimeout(() => {
+          itemElement.style.transition = `${transitionDuration}ms`;
+        }, 0);
+      }
+    },
+    [transitionDuration],
+  );
+
   const findTheMostIntersectingBoardList = useCallback(
     // ? can be redone to be more efficient
 
@@ -195,6 +209,46 @@ export default function Board({
     [boardContent],
   );
 
+  const applyAndSetPlaceholder = useCallback(
+    (placeholder: Placeholder | string | null, instant?: boolean, newDraggedItem?: string) => {
+      const useDraggedItem = newDraggedItem || draggedItem;
+      console.log('applyAndSetPlaceholder called');
+      console.log('draggedItem', useDraggedItem);
+      // set margin of the placeholder
+      setPlaceholder((prev) => {
+        setTimeout(() => {
+          updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
+          getBoardPositions();
+        }, transitionDuration);
+        if (typeof placeholder === 'string') return placeholder;
+        if (placeholder?.id) {
+          const placeholderElement = document.getElementById(placeholder.id);
+          if (instant) moveInstantly(placeholder.id);
+          if (placeholderElement) {
+            if (placeholder.above) {
+              placeholderElement.style.marginTop = `calc(${placeholder.height} + ${itemGap})`;
+            } else {
+              placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${itemGap})`;
+            }
+          }
+        }
+        if (prev && typeof prev !== 'string' && prev.id) {
+          const prevPlaceholderElement = document.getElementById(prev.id);
+          if (instant) moveInstantly(prev.id);
+          if (prevPlaceholderElement) prevPlaceholderElement.style.margin = '0';
+        }
+        return placeholder;
+      });
+    },
+    [
+      draggedItem,
+      transitionDuration,
+      moveInstantly,
+      itemGap,
+      updateItemPositions,
+      getBoardPositions,
+    ],
+  );
   // ?? REDO LATER
   useEffect(() => {
     Array.from(boardContent.keys()).forEach((key) => {
@@ -208,7 +262,7 @@ export default function Board({
       const activeList = boardContent.get(boardListInAction as string);
       const boardList = document.getElementById(boardListInAction);
       console.log('activeList', activeList);
-      // activelist filter draggedItem
+
       if (activeList) {
         const cleanActiveList = activeList?.filter((item) => item.id.toString() !== draggedItem);
         //! if empty board list and no placeholder generate general placeholder
@@ -216,6 +270,8 @@ export default function Board({
           const draggedItemElement = document.getElementById(draggedItem as string);
           if (boardList) {
             boardList.style.paddingTop = `calc(${draggedItemElement?.style.height} + ${listPadding})`;
+            // this will trigger the board to update position as its expanded
+            applyAndSetPlaceholder('general');
           }
         }
       }
@@ -223,61 +279,15 @@ export default function Board({
         boardList.classList.add('active');
       }
     }
-  }, [boardListInAction, boardContent, draggedItem, listPadding, listActiveStyle, listStyle]);
-
-  const moveInstantly = useCallback(
-    (id: string) => {
-      console.log('moveInstantly called');
-      const itemElement = document.getElementById(id);
-      if (itemElement) {
-        itemElement.style.transition = '0s';
-        setTimeout(() => {
-          itemElement.style.transition = `${transitionDuration}ms`;
-        }, 0);
-      }
-    },
-    [transitionDuration],
-  );
-
-  const applyAndSetPlaceholder = useCallback(
-    (placeholder: Placeholder | null, instant?: boolean, newDraggedItem?: string) => {
-      const useDraggedItem = newDraggedItem || draggedItem;
-      console.log('applyAndSetPlaceholder called');
-      console.log('draggedItem', useDraggedItem);
-      // set margin of the placeholder
-      setPlaceholder((prev) => {
-        if (placeholder) {
-          const placeholderElement = document.getElementById(placeholder.id);
-          if (instant) moveInstantly(placeholder.id);
-          if (placeholderElement) {
-            if (placeholder.above) {
-              placeholderElement.style.marginTop = `calc(${placeholder.height} + ${itemGap})`;
-            } else {
-              placeholderElement.style.marginBottom = `calc(${placeholder.height} + ${itemGap})`;
-            }
-          }
-        }
-        if (prev) {
-          const prevPlaceholderElement = document.getElementById(prev.id);
-          if (instant) moveInstantly(prev.id);
-          if (prevPlaceholderElement) prevPlaceholderElement.style.margin = '0';
-        }
-        setTimeout(() => {
-          updateItemPositions(useDraggedItem ? useDraggedItem : undefined);
-          getBoardPositions();
-        }, transitionDuration);
-        return placeholder;
-      });
-    },
-    [
-      draggedItem,
-      transitionDuration,
-      moveInstantly,
-      itemGap,
-      updateItemPositions,
-      getBoardPositions,
-    ],
-  );
+  }, [
+    boardListInAction,
+    boardContent,
+    draggedItem,
+    listPadding,
+    listActiveStyle,
+    listStyle,
+    applyAndSetPlaceholder,
+  ]);
 
   interface YPosWithPlaceholder {
     y0?: number;
@@ -569,7 +579,10 @@ export default function Board({
       // ? state is old but usePlaceholder is new
       // This is to show placeholder instantly when drag starts
       const usePlaceholder = newPlaceholder || placeholder;
-      const isAllRight = placeholderInActiveBoardList(usePlaceholder, mostIntersectingBoardList);
+      const isAllRight =
+        typeof usePlaceholder !== 'string'
+          ? placeholderInActiveBoardList(usePlaceholder, mostIntersectingBoardList)
+          : true;
       if ((!mostIntersectingBoardList || !isAllRight) && usePlaceholder) {
         applyAndSetPlaceholder(null);
         setTimeout(() => {
@@ -593,7 +606,7 @@ export default function Board({
         // id,
         currentPosition,
         mostIntersectingBoardList,
-        usePlaceholder,
+        typeof usePlaceholder !== 'string' ? usePlaceholder : null,
         activeBoardListItemPositions,
       );
     },
@@ -700,7 +713,7 @@ export default function Board({
           return prev;
         });
       }, transitionDuration);
-    } else if (!placeholder && boardListInAction !== boardListKey) {
+    } else if (placeholder === 'general' && boardListInAction !== boardListKey) {
       console.log('time to move to empty list');
       // just delete the dragged item from the old list and add it to the new list
       const boardListItems = boardContent.get(boardListInAction as string);
@@ -731,7 +744,7 @@ export default function Board({
       );
 
       setBoardListInAction(null);
-    } else if (placeholder) {
+    } else if (placeholder && typeof placeholder !== 'string') {
       // ? If placeholder is not null and the board list in action is the same as placeholders list
       dragElement.style.position = 'initial';
 
