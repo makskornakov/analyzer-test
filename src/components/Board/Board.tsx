@@ -5,6 +5,7 @@ import { BoardListContainer } from './Board.styled';
 import BoardList from './BoardList';
 
 import type { CSSObject } from 'styled-components';
+import { getIntersectionPercentage, getRect } from './helpers';
 
 export interface BoardItem {
   id: number;
@@ -29,22 +30,21 @@ export interface Placeholder {
 }
 
 const sensitivityPixels = 10;
-// ? Y 0 & 3 are cords of the
 interface ItemYCords {
   y1: number;
   y2: number;
 }
 
-function getRect(element: HTMLElement, container: HTMLElement): Position {
-  const rect = element.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  return {
-    x1: rect.x - containerRect.x,
-    y1: rect.y - containerRect.y,
-    x2: rect.x + rect.width - containerRect.x,
-    y2: rect.y + rect.height - containerRect.y,
-  };
+// ? Y 0 & 3 are cords of the end of the margin (top or bottom)
+interface YPosWithPlaceholder {
+  y0?: number;
+  y1: number;
+  y2: number;
+  y3?: number;
 }
+
+type changeBoards = Map<string, BoardItem[]>;
+
 function ExampleItemComponent({ item }: { item: BoardItem }) {
   return (
     <>
@@ -52,18 +52,6 @@ function ExampleItemComponent({ item }: { item: BoardItem }) {
       {item.content && <p>{item.content}</p>}
     </>
   );
-}
-
-function getIntersectionPercentage(rect: Position, refRect: Position) {
-  // return the percentage of rect that is inside checkableRect
-  // ? refRect is for ex. the boardList
-  const x1 = Math.max(rect.x1, refRect.x1);
-  const y1 = Math.max(rect.y1, refRect.y1);
-  const x2 = Math.min(rect.x2, refRect.x2);
-  const y2 = Math.min(rect.y2, refRect.y2);
-  const intersectionArea = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
-  const rectArea = (rect.x2 - rect.x1) * (rect.y2 - rect.y1);
-  return intersectionArea / rectArea;
 }
 interface BoardProps {
   initialBoardContent: BoardContent;
@@ -94,15 +82,16 @@ export default function Board({
   setNewBoardContent,
   ItemComponent,
 }: BoardProps) {
+  // parent element for coordinates
   const container = useRef<HTMLDivElement>(null);
-  const [boardContentLocal, setBoardContentLocal] = useState<BoardContent>(initialBoardContent);
 
+  // if user passes state setter, use it in priority
+  const [boardContentLocal, setBoardContentLocal] = useState<BoardContent>(initialBoardContent);
   const boardContent = useMemo(() => {
     return setNewBoardContent ? initialBoardContent : boardContentLocal;
   }, [initialBoardContent, setNewBoardContent, boardContentLocal]);
 
   const [boardPositions, setBoardPositions] = useState<Map<string, Position>>(new Map());
-
   const [itemPositions, setItemPositions] = useState<Map<string, Position>>(new Map());
 
   const [placeholder, setPlaceholder] = useState<Placeholder | string | null>(null);
@@ -249,6 +238,7 @@ export default function Board({
       getBoardPositions,
     ],
   );
+
   // ?? REDO LATER
   useEffect(() => {
     Array.from(boardContent.keys()).forEach((key) => {
@@ -283,25 +273,15 @@ export default function Board({
     boardListInAction,
     boardContent,
     draggedItem,
+    applyAndSetPlaceholder,
+    // not updated while running
     listPadding,
     listActiveStyle,
     listStyle,
-    applyAndSetPlaceholder,
   ]);
-
-  interface YPosWithPlaceholder {
-    y0?: number;
-    y1: number;
-    y2: number;
-    y3?: number;
-  }
-
-  type changeBoards = Map<string, BoardItem[]>;
 
   const setBoardStateFunc = useCallback(
     (changeBoards: changeBoards) => {
-      // console.log('setBoardStateFunc called');
-
       const setFunc = function (prev: Map<string, BoardItem[]>, changeBoards: changeBoards) {
         const newBoardContent = new Map(prev);
         changeBoards.forEach((value, key) => {
@@ -317,7 +297,7 @@ export default function Board({
   const updateBoardOrder = useCallback(
     (dragged: string, placeholder: Placeholder, boardList: string) => {
       console.log('updateBoardOrder called');
-      // get the boardList of the dragged item
+
       const draggedItemBoardListName = Array.from(boardContent.keys()).find((key) =>
         boardContent.get(key)?.find((item) => String(item.id) === dragged),
       );
@@ -325,58 +305,32 @@ export default function Board({
 
       const sameBoardList = draggedItemBoardListName === boardList;
 
-      if (sameBoardList) {
-        const theBoardList = boardContent.get(boardList);
-        if (!theBoardList) return;
-        const draggedItemIndex = theBoardList.findIndex((item) => String(item.id) === dragged);
-        const draggedItem = theBoardList[draggedItemIndex];
-        // remove the dragged item from the boardList
-        theBoardList.splice(draggedItemIndex, 1);
-        const placeholderIndex = theBoardList.findIndex(
-          (item) => String(item.id) === placeholder.id,
-        );
-        if (placeholder.above) {
-          theBoardList.splice(placeholderIndex, 0, draggedItem);
-        } else {
-          theBoardList.splice(placeholderIndex + 1, 0, draggedItem);
-        }
-        setBoardStateFunc(new Map([[boardList, theBoardList]]));
+      const draggedItemBoardList = boardContent.get(draggedItemBoardListName);
+      const theBoardList = sameBoardList ? draggedItemBoardList : boardContent.get(boardList);
+
+      if (!theBoardList) return;
+      if (!draggedItemBoardList) return;
+
+      const draggedItemIndex = draggedItemBoardList.findIndex(
+        (item) => String(item.id) === dragged,
+      );
+      const draggedItem = draggedItemBoardList[draggedItemIndex];
+
+      // remove the dragged item from the boardList
+      draggedItemBoardList.splice(draggedItemIndex, 1);
+      const placeholderIndex = theBoardList.findIndex((item) => String(item.id) === placeholder.id);
+
+      // add the dragged item to the boardList
+      const addToBoard = sameBoardList ? draggedItemBoardList : theBoardList;
+      if (placeholder.above) {
+        addToBoard.splice(placeholderIndex, 0, draggedItem);
       } else {
-        const draggedItemBoardList = [
-          ...(boardContent.get(draggedItemBoardListName) as BoardItem[]),
-        ];
-        const placeHolderBoardList = [...(boardContent.get(boardList) as BoardItem[])];
-        if (!draggedItemBoardList || !placeHolderBoardList) return;
-
-        // get the index of the dragged item
-        const draggedItemIndex = draggedItemBoardList.findIndex(
-          (item) => String(item.id) === dragged,
-        );
-        // get the index of the placeholder
-        const placeholderIndex = placeHolderBoardList.findIndex(
-          (item) => String(item.id) === placeholder?.id,
-        );
-        if (draggedItemIndex === -1 || placeholderIndex === -1) return;
-        // save the dragged item
-        const draggedItem = draggedItemBoardList[draggedItemIndex];
-        // remove the dragged item from the boardList
-        draggedItemBoardList.splice(draggedItemIndex, 1);
-
-        placeHolderBoardList.splice(placeholderIndex + (placeholder.above ? 0 : 1), 0, draggedItem);
-        setBoardStateFunc(
-          new Map([
-            [boardList, placeHolderBoardList],
-            [draggedItemBoardListName, draggedItemBoardList],
-          ]),
-        );
+        addToBoard.splice(placeholderIndex + 1, 0, draggedItem);
       }
-      // updateItemPositions();
-      // getBoardPositions();
-      // insert the dragged item above or below the placeholder
 
-      // update the boardContent
-
-      // setDraggedItem(null);
+      const newBoardContent = new Map([[draggedItemBoardListName, draggedItemBoardList]]);
+      if (!sameBoardList) newBoardContent.set(boardList, addToBoard);
+      setBoardStateFunc(newBoardContent);
     },
     [boardContent, setBoardStateFunc],
   );
