@@ -638,11 +638,12 @@ export default function Board({
     if (!placeholder && !boardListInAction) {
       const placeID = generateInitialPlaceholder(id, data.node.style.height);
 
+      //? this can be added back to prevent "last frame" animation of the list being "active" on item release out of list bounds. Idea: option "flash when back".
       // const neededList = boardContent.get(boardListKey as string);
       // const filteredList = neededList?.filter(
       //   (item) => item.id.toString() !== id
       // );
-      // if (filteredList?.length === 0) //? this can be added back to prevent "last frame" animation of the list being "active" on item release out of list bounds. Idea: option "flash when back".
+      // if (filteredList?.length === 0)
       setBoardListInAction(boardListKey as string);
 
       setTimeout(() => {
