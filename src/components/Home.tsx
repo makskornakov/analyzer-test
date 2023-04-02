@@ -144,12 +144,11 @@ export default function HomeWrapper({
             setNewBoardContent={setBoardContent}
             listWidth={'10em'}
             itemHeight={'3em'}
-            itemGap={'1em'}
             listPadding={'1em'}
             // transitionDuration={400}
+            // sensitivityPercentage={80}
             itemStyle={{
               borderRadius: '0.5em',
-              // border: '2px solid grey',
               background: '#252525',
               display: 'flex',
               gap: '1em',

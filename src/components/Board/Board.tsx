@@ -7,9 +7,6 @@ import BoardList from './BoardList';
 import type { CSSObject } from 'styled-components';
 import { getIntersectionPercentage, getRect } from './helpers';
 
-// ! Move somewhere else
-const sensitivityPixels = 10;
-
 export interface BoardItem {
   id: number;
   title: string;
@@ -20,6 +17,7 @@ export interface TheBoard {
   items: BoardItem[];
   width?: string;
 }
+
 export type BoardContent = Map<string, TheBoard>;
 
 export interface Position {
@@ -33,12 +31,10 @@ export interface Placeholder {
   id: string;
   height: string;
   above: boolean;
-  // instant: boolean;
-  cords: ItemYCords;
-}
-interface ItemYCords {
-  y1: number;
-  y2: number;
+  cords: {
+    y1: number;
+    y2: number;
+  };
 }
 
 // ? Y 0 & 3 are cords of the end of the margin (top or bottom)
@@ -63,13 +59,14 @@ interface BoardProps {
   initialBoardContent: BoardContent;
   listWidth: string;
   itemHeight: string;
-  itemGap: string;
+  itemGap?: string;
   listPadding?: string;
   itemStyle?: CSSObject;
   listStyle?: CSSObject;
   itemActiveStyle?: CSSObject;
   listActiveStyle?: CSSObject;
   transitionDuration?: number;
+  sensitivityPercentage?: number;
   setNewBoardContent?: React.Dispatch<React.SetStateAction<BoardContent>>;
   ItemComponent?: React.FC<{ item: BoardItem }>;
 }
@@ -78,13 +75,14 @@ export default function Board({
   initialBoardContent,
   listWidth,
   itemHeight,
-  itemGap,
+  itemGap = '1em',
   listPadding = '0px',
   itemStyle,
   listStyle,
   itemActiveStyle,
   listActiveStyle,
   transitionDuration = 200,
+  sensitivityPercentage = 40,
   setNewBoardContent,
   ItemComponent,
 }: BoardProps) {
@@ -452,10 +450,11 @@ export default function Board({
           closestEdge.id = itemId;
           closestEdge.above = false;
         }
+        const sensitivity = ((y2 - y1) / 200) * sensitivityPercentage;
 
         if (
-          useLine > y1 + sensitivityPixels &&
-          useLine < y2 - sensitivityPixels &&
+          useLine > y1 + sensitivity &&
+          useLine < y2 - sensitivity &&
           itemId !== placeholder?.id
         ) {
           // setting new placeholder
@@ -482,8 +481,8 @@ export default function Board({
         ) {
           // when the dragged item touches the placeholder its time to move the intersected item to the other side since there is more space
           const timeToChangePlaceholderSide = placeholder?.above
-            ? useLine > y1 + sensitivityPixels && useLine < y2 - sensitivityPixels
-            : useLine < y2 - sensitivityPixels && useLine > y1 + sensitivityPixels;
+            ? useLine > y1 + sensitivity && useLine < y2 - sensitivity
+            : useLine < y2 - sensitivity && useLine > y1 + sensitivity;
 
           console.log('timeToChangePlaceholderSide', timeToChangePlaceholderSide);
           // console.log('itemInTransition', itemInTransition);
@@ -523,7 +522,7 @@ export default function Board({
         applyAndSetPlaceholder(placeholderObj);
       }
     },
-    [applyAndSetPlaceholder, itemInTransition],
+    [applyAndSetPlaceholder, itemInTransition, sensitivityPercentage],
   );
 
   const handleDrag = useCallback(
