@@ -456,7 +456,8 @@ export default function Board({
           closestEdge.id = itemId;
           closestEdge.above = false;
         }
-        const sensitivity = ((y2 - y1) / 200) * sensitivityPercentage;
+        const sensitivity = Math.round(((y2 - y1) / 200) * sensitivityPercentage);
+        console.warn('sensitivity', sensitivity);
 
         if (
           useLine > y1 + sensitivity &&
