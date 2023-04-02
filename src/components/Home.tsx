@@ -70,7 +70,7 @@ export default function HomeWrapper({
     if (boardContent) {
       const list = boardContent.get('Calculate');
       if (list) {
-        setCalcRes(calculateListResult(list));
+        setCalcRes(calculateListResult(list.items));
       }
     }
   }, [boardContent]);
@@ -131,7 +131,7 @@ export default function HomeWrapper({
       <InnerWrapper ref={SettingSection}>
         <div
           style={{
-            width: '85%',
+            width: '70%',
             height: '80%',
             borderTop: '2px dashed #f55500',
             borderBottom: '2px dashed #f55500',
@@ -142,7 +142,7 @@ export default function HomeWrapper({
           <Board
             initialBoardContent={boardContent}
             setNewBoardContent={setBoardContent}
-            listWidth={'250px'}
+            listWidth={'10em'}
             itemHeight={'3em'}
             itemGap={'1em'}
             listPadding={'1em'}

@@ -1,12 +1,12 @@
 import Draggable from 'react-draggable';
 import { CSSObject } from 'styled-components';
 
-import { BoardItem, BoardListContent, Position } from './Board';
+import type { BoardItem, Position, TheBoard } from './Board';
 import { LiContainer, ListItem } from './Board.styled';
 
 interface BoardListProps {
   id: string;
-  boardList: BoardListContent;
+  boardList: TheBoard;
   itemPositions: Map<string, Position>;
   // placeholder: Placeholder | null;
   // dragItem: string | null;
@@ -46,6 +46,7 @@ export default function BoardList({
   ItemComponent,
 }: BoardListProps) {
   const listId = id.charAt(0).toUpperCase() + id.slice(1);
+  const boardListWidth = boardList.width ?? width;
   return (
     <div>
       <h3>{listId}</h3>
@@ -54,14 +55,14 @@ export default function BoardList({
         listActiveStyle={listActiveStyle}
         id={id}
         style={{
-          width: width,
+          width: boardListWidth,
           gap,
           padding: listPadding,
 
           transition: `${transitionDuration}ms`,
         }}
       >
-        {boardList.map((item) => (
+        {boardList.items.map((item) => (
           <Draggable
             key={item.id}
             defaultPosition={{ x: 0, y: 0 }}
@@ -115,7 +116,7 @@ export default function BoardList({
               itemActiveStyle={itemActiveStyle}
               id={item.id.toString()}
               style={{
-                width: width,
+                width: boardListWidth,
                 height: itemHeight,
 
                 transition: `${transitionDuration}ms`,

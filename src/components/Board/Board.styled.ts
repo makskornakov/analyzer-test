@@ -13,6 +13,7 @@ export const LiContainer = styled.ul<{ listStyle?: CSSObject; listActiveStyle?: 
   box-sizing: content-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: flex-start;
   user-select: none;
   -webkit-user-select: none;
