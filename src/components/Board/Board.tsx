@@ -563,10 +563,15 @@ export default function Board({
       if (!boardListItems) return;
 
       const activeBoardListItemPositions = new Map(
-        Array.from(itemPositions).filter(
-          ([theId]) => boardListItems.items.some((item) => `${item.id}` === theId) && theId !== id,
-        ),
+        boardListItems.items.map((item) => [
+          `${item.id}`,
+          itemPositions.get(`${item.id}`) as Position,
+        ]),
       );
+
+      // exclude dragged item
+      activeBoardListItemPositions.delete(id);
+
       if (activeBoardListItemPositions.size < 1) moveInstantly(mostIntersectingBoardList);
 
       checkOnDrag(
