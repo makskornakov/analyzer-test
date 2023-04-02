@@ -383,12 +383,18 @@ export default function Board({
       if (!boardList) return;
       const theYMap: Map<string, YPosWithPlaceholder> = new Map();
 
-      // console.log('activeBoardListItemPositions', itemPositions);
-
       itemPositions.forEach((itemPosition, itemId) => {
         const { y1, y2 } = itemPosition;
         const resObj: YPosWithPlaceholder = { y1, y2 };
         // if placeholder id is the same as the item id then we need to check if the placeholder is above or below the item
+        const isPlaceHolder = placeholder?.id === itemId;
+        // const resObj2 = {
+        //   y1,
+        //   y2,
+        //   //
+        //   y0: isPlaceHolder && placeholder.above ? placeholder.cords.y1 : undefined,
+        //   y3: isPlaceHolder && !placeholder.above ? placeholder.cords.y2 : undefined,
+        // };
         if (placeholder?.id === itemId) {
           if (placeholder.above) {
             resObj.y0 = placeholder.cords.y1;
