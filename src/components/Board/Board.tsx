@@ -465,12 +465,11 @@ export default function Board({
           itemId !== placeholder?.id
         ) {
           // setting new placeholder
-          // ? not sure of sensitivityPixels
-          const setPlaceholderAbove = useLine < y1;
-
+          // set the placeholder above unless there is at least sensitivity space before changing the side
+          const setPlaceholderAbove = useLine < y2;
           const placeholderObj: Placeholder = {
             id: itemId,
-            above: !setPlaceholderAbove,
+            above: setPlaceholderAbove,
             height: placeholderElement.style.height,
             cords: itemYPos,
           };
